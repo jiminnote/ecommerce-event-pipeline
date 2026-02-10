@@ -1,0 +1,11 @@
+# === Production ===
+apache-airflow==2.7.3
+apache-airflow-providers-postgres==5.7.1
+psycopg2-binary==2.9.9
+
+# === Batch Processing ===
+pyspark==3.5.1
+
+# === Testing ===
+pytest==7.4.4
+pytest-cov==4.1.0
