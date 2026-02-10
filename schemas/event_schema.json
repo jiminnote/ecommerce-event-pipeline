@@ -1,0 +1,145 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "이커머스 행동 이벤트 스키마",
+  "description": "이커머스 플랫폼 사용자 행동 이벤트 정의 v1.2.0 — 5가지 이벤트 유형과 공통 필드, 유효성 규칙을 정의합니다.",
+  "type": "object",
+
+  "definitions": {
+    "common_fields": {
+      "type": "object",
+      "properties": {
+        "event_id":    { "type": "string", "format": "uuid", "description": "이벤트 고유 식별자 (UUID v4)" },
+        "event_type":  { "type": "string", "enum": ["page_view", "click", "add_to_cart", "purchase", "search"], "description": "이벤트 유형" },
+        "user_id":     { "type": "string", "pattern": "^U\\d{6}$", "description": "사용자 고유 식별자" },
+        "session_id":  { "type": "string", "format": "uuid", "description": "세션 고유 식별자" },
+        "timestamp":   { "type": "string", "format": "date-time", "description": "이벤트 발생 시각 (ISO 8601)" },
+        "platform":    { "type": "string", "enum": ["web", "ios", "android"], "description": "사용자 플랫폼" },
+        "device_type": { "type": "string", "enum": ["desktop", "mobile", "tablet"], "description": "디바이스 유형" },
+        "os":          { "type": "string", "enum": ["Windows", "macOS", "Linux", "iOS", "Android"], "description": "운영체제" },
+        "browser":     { "type": "string", "description": "브라우저 (Chrome, Safari, Firefox, Edge, Samsung Internet)" }
+      },
+      "required": ["event_id", "event_type", "user_id", "session_id", "timestamp", "platform", "device_type"]
+    },
+
+    "page_view": {
+      "description": "사용자가 페이지를 조회한 이벤트",
+      "allOf": [
+        { "$ref": "#/definitions/common_fields" },
+        {
+          "type": "object",
+          "properties": {
+            "event_type": { "const": "page_view" },
+            "page_url":   { "type": "string", "format": "uri", "description": "조회 페이지 URL" },
+            "page_type":  { "type": "string", "enum": ["home", "category", "product", "cart", "checkout", "order_complete", "mypage"], "description": "페이지 유형" },
+            "referrer":   { "type": ["string", "null"], "description": "유입 경로 (referrer URL 또는 'direct')" }
+          },
+          "required": ["page_url", "page_type"]
+        }
+      ]
+    },
+
+    "click": {
+      "description": "사용자가 특정 UI 요소를 클릭한 이벤트",
+      "allOf": [
+        { "$ref": "#/definitions/common_fields" },
+        {
+          "type": "object",
+          "properties": {
+            "event_type":   { "const": "click" },
+            "page_url":     { "type": "string", "format": "uri" },
+            "element_id":   { "type": "string", "description": "클릭 요소 식별자" },
+            "element_type": { "type": "string", "enum": ["button", "link", "banner", "product_card", "search_result", "recommendation"], "description": "요소 유형" },
+            "product_id":   { "type": ["string", "null"], "pattern": "^P\\d{4}$", "description": "상품 ID (해당 시)" },
+            "category_id":  { "type": ["string", "null"], "pattern": "^CAT\\d{3}$", "description": "카테고리 ID" },
+            "position":     { "type": ["integer", "null"], "minimum": 0, "description": "노출 위치 (0-based)" }
+          },
+          "required": ["page_url", "element_id", "element_type"]
+        }
+      ]
+    },
+
+    "add_to_cart": {
+      "description": "사용자가 상품을 장바구니에 담은 이벤트",
+      "allOf": [
+        { "$ref": "#/definitions/common_fields" },
+        {
+          "type": "object",
+          "properties": {
+            "event_type":  { "const": "add_to_cart" },
+            "product_id":  { "type": "string", "pattern": "^P\\d{4}$" },
+            "category_id": { "type": "string", "pattern": "^CAT\\d{3}$" },
+            "quantity":    { "type": "integer", "minimum": 1, "maximum": 99, "description": "수량" },
+            "unit_price":  { "type": "number", "minimum": 1, "maximum": 10000000, "description": "단가 (원)" },
+            "source_page":       { "type": ["string", "null"], "description": "담기 발생 페이지" },
+            "is_recommendation": { "type": ["boolean", "null"], "description": "추천 상품 여부" }
+          },
+          "required": ["product_id", "quantity", "unit_price"]
+        }
+      ]
+    },
+
+    "purchase": {
+      "description": "사용자가 주문을 완료한 이벤트",
+      "allOf": [
+        { "$ref": "#/definitions/common_fields" },
+        {
+          "type": "object",
+          "properties": {
+            "event_type":     { "const": "purchase" },
+            "order_id":       { "type": "string", "pattern": "^ORD\\d{13,}$", "description": "주문 ID" },
+            "total_amount":   { "type": "number", "minimum": 1, "maximum": 100000000, "description": "총 결제 금액 (원)" },
+            "payment_method": { "type": "string", "enum": ["credit_card", "bank_transfer", "kakao_pay", "naver_pay", "toss_pay"], "description": "결제 수단" },
+            "extra_data": {
+              "type": "string",
+              "description": "JSON 문자열: products(상품 목록), discount_amount, shipping_fee, coupon_code"
+            }
+          },
+          "required": ["order_id", "total_amount", "payment_method"]
+        }
+      ]
+    },
+
+    "search": {
+      "description": "사용자가 검색을 수행한 이벤트",
+      "allOf": [
+        { "$ref": "#/definitions/common_fields" },
+        {
+          "type": "object",
+          "properties": {
+            "event_type":      { "const": "search" },
+            "search_query":    { "type": "string", "minLength": 1, "maxLength": 200, "description": "검색 키워드" },
+            "result_count":    { "type": "integer", "minimum": 0, "description": "검색 결과 수" },
+            "page_url":        { "type": "string", "format": "uri" },
+            "category_filter": { "type": ["string", "null"], "description": "카테고리 필터" },
+            "sort_type":       { "type": ["string", "null"], "enum": [null, "relevance", "price_asc", "price_desc", "latest", "popular"], "description": "정렬 기준" },
+            "page_number":     { "type": ["integer", "null"], "minimum": 1, "description": "검색 결과 페이지" }
+          },
+          "required": ["search_query", "result_count"]
+        }
+      ]
+    }
+  },
+
+  "oneOf": [
+    { "$ref": "#/definitions/page_view" },
+    { "$ref": "#/definitions/click" },
+    { "$ref": "#/definitions/add_to_cart" },
+    { "$ref": "#/definitions/purchase" },
+    { "$ref": "#/definitions/search" }
+  ],
+
+  "x-platform-device-rules": {
+    "description": "플랫폼-디바이스 정합성 규칙 (코드 레벨에서 검증)",
+    "ios":     { "allowed_devices": ["mobile"],                   "allowed_os": ["iOS"] },
+    "android": { "allowed_devices": ["mobile"],                   "allowed_os": ["Android"] },
+    "web":     { "allowed_devices": ["desktop", "mobile", "tablet"], "allowed_os": ["Windows", "macOS", "Linux"] }
+  },
+
+  "x-funnel-sequence": {
+    "description": "전환 퍼널 순서 규칙",
+    "rules": [
+      "purchase 발생 전 반드시 동일 세션 내 add_to_cart 존재",
+      "add_to_cart 발생 전 반드시 동일 세션 내 page_view 또는 click 존재"
+    ]
+  }
+}
