@@ -1,0 +1,1506 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이커머스 ETL 파이프라인 포트폴리오</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #dbeafe;
+            --accent: #f59e0b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --code-bg: #1e293b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ===== NAV ===== */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            transition: box-shadow 0.3s;
+        }
+        .nav.scrolled { box-shadow: 0 2px 20px rgba(0,0,0,0.06); }
+        .nav-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+        }
+        .nav-logo {
+            font-weight: 800;
+            font-size: 15px;
+            color: var(--primary);
+            letter-spacing: -0.3px;
+        }
+        .nav-links { display: flex; gap: 6px; }
+        .nav-links a {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        .nav-links a:hover { color: var(--primary); background: var(--primary-light); }
+
+        /* ===== HERO ===== */
+        .hero {
+            padding: 140px 24px 80px;
+            text-align: center;
+            background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 50%, #fefce8 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 50%, rgba(37,99,235,0.04) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 50%, rgba(16,185,129,0.04) 0%, transparent 50%);
+        }
+        .hero-content { position: relative; max-width: 800px; margin: 0 auto; }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: white;
+            border: 1px solid var(--border);
+            padding: 6px 16px;
+            border-radius: 100px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        .hero h1 {
+            font-size: clamp(28px, 4vw, 42px);
+            font-weight: 800;
+            line-height: 1.3;
+            letter-spacing: -0.5px;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--text) 0%, var(--primary-dark) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero-subtitle {
+            font-size: 17px;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+        .hero-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 36px;
+        }
+        .flow-step {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: white;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        .flow-arrow { color: var(--primary); font-weight: 600; font-size: 16px; }
+        .hero-meta {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        .meta-item {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        .meta-item strong {
+            color: var(--text);
+            font-weight: 700;
+        }
+        .hero-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 28px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 14px rgba(37,99,235,0.3);
+        }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.35); }
+        .btn-outline {
+            background: white;
+            color: var(--text);
+            border: 1.5px solid var(--border);
+        }
+        .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* ===== SECTION ===== */
+        .section {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 80px 24px;
+        }
+        .section-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--primary);
+            margin-bottom: 12px;
+        }
+        .section-title {
+            font-size: clamp(24px, 3vw, 32px);
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            margin-bottom: 12px;
+        }
+        .section-desc {
+            font-size: 16px;
+            color: var(--text-secondary);
+            max-width: 640px;
+            margin-bottom: 40px;
+            line-height: 1.7;
+        }
+        .divider {
+            border: none;
+            height: 1px;
+            background: var(--border);
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* ===== BACKGROUND ===== */
+        .bg-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .bg-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            transition: all 0.2s;
+        }
+        .bg-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.06); transform: translateY(-2px); }
+        .bg-card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin-bottom: 16px;
+        }
+        .bg-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 10px; }
+        .bg-card p { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+
+        /* ===== ARCHITECTURE ===== */
+        .arch-diagram {
+            background: var(--code-bg);
+            border-radius: 16px;
+            padding: 40px;
+            overflow-x: auto;
+            margin-top: 20px;
+            position: relative;
+        }
+        .arch-flow {
+            display: flex;
+            align-items: flex-start;
+            gap: 0;
+            min-width: 900px;
+            justify-content: center;
+        }
+        .arch-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .arch-box {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 12px;
+            padding: 16px 20px;
+            text-align: center;
+            min-width: 120px;
+            transition: all 0.3s;
+        }
+        .arch-box:hover {
+            background: rgba(37,99,235,0.15);
+            border-color: rgba(37,99,235,0.4);
+        }
+        .arch-box-icon { font-size: 24px; margin-bottom: 6px; }
+        .arch-box-label { font-size: 12px; font-weight: 700; color: #e2e8f0; letter-spacing: 0.3px; }
+        .arch-box-sub { font-size: 10px; color: #94a3b8; margin-top: 2px; }
+        .arch-connector {
+            display: flex;
+            align-items: center;
+            padding-top: 20px;
+            color: var(--primary);
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        .arch-branch {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+        .arch-branch-label {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 100px;
+            letter-spacing: 0.5px;
+        }
+        .arch-branch-pass { background: rgba(16,185,129,0.15); color: #34d399; }
+        .arch-branch-fail { background: rgba(239,68,68,0.15); color: #f87171; }
+        .arch-mart-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .arch-mart-item {
+            background: rgba(245,158,11,0.1);
+            border: 1px solid rgba(245,158,11,0.25);
+            border-radius: 8px;
+            padding: 8px 12px;
+            text-align: center;
+        }
+        .arch-mart-item .arch-box-label { color: #fbbf24; font-size: 11px; }
+        .arch-legend {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+        .arch-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: #94a3b8;
+        }
+        .arch-legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 3px;
+        }
+
+        /* ===== MATCH SECTION ===== */
+        .match-grid {
+            display: grid;
+            gap: 24px;
+        }
+        .match-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+        .match-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.06); transform: translateY(-2px); }
+        .match-card-header {
+            padding: 28px 32px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+        .match-card-num {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+        .match-card-header h3 { font-size: 18px; font-weight: 700; }
+        .match-card-header .subtitle { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+        .match-card-body { padding: 20px 32px 28px; }
+        .match-detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
+        .match-detail-item {
+            background: var(--bg);
+            border-radius: 10px;
+            padding: 20px;
+        }
+        .match-detail-item h4 {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .match-detail-item p { font-size: 13px; color: var(--text-secondary); line-height: 1.7; }
+        .match-detail-item code {
+            display: inline-block;
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            padding: 1px 7px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+        }
+
+        /* DM Card Layout */
+        .dm-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 14px;
+            margin-top: 16px;
+        }
+        .dm-card {
+            background: var(--bg);
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 4px solid;
+            transition: all 0.2s;
+        }
+        .dm-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+        .dm-card h4 { font-size: 14px; font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+        .dm-card p { font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
+        .dm-card .dm-columns { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; }
+        .dm-card .dm-col {
+            background: white;
+            border: 1px solid var(--border);
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: var(--text-secondary);
+            font-family: 'SF Mono', 'Fira Code', monospace;
+        }
+
+        /* Schema Tags */
+        .schema-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .schema-tag {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+        .schema-tag:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* ===== QUALITY TABLE ===== */
+        .quality-table-wrap {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        .quality-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .quality-table thead th {
+            background: var(--bg);
+            padding: 14px 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-align: left;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border);
+        }
+        .quality-table tbody td {
+            padding: 14px 20px;
+            font-size: 14px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .quality-table tbody tr:last-child td { border-bottom: none; }
+        .quality-table tbody tr:hover { background: #f8fafc; }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .badge-pass { background: #ecfdf5; color: #059669; }
+        .badge-type {
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .quality-branch {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            margin-top: 20px;
+        }
+        .quality-branch h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .branch-flow {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .branch-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+        .branch-box {
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            text-align: center;
+        }
+        .branch-box-check { background: var(--primary-light); color: var(--primary-dark); }
+        .branch-box-pass { background: #ecfdf5; color: #059669; }
+        .branch-box-fail { background: #fef2f2; color: #dc2626; }
+        .branch-arrow { color: var(--text-secondary); font-size: 18px; }
+        .branch-split { display: flex; flex-direction: column; gap: 8px; }
+
+        /* ===== TECH STACK ===== */
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+        }
+        .tech-item {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s;
+        }
+        .tech-item:hover { border-color: var(--primary); box-shadow: 0 4px 12px rgba(37,99,235,0.08); transform: translateY(-1px); }
+        .tech-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        .tech-name { font-size: 14px; font-weight: 700; }
+        .tech-role { font-size: 11px; color: var(--text-secondary); }
+
+        /* ===== DECISIONS ===== */
+        .decision-list { display: grid; gap: 16px; }
+        .decision-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px 32px;
+            display: grid;
+            grid-template-columns: 64px 1fr;
+            gap: 20px;
+            transition: all 0.2s;
+        }
+        .decision-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.06); }
+        .decision-num {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: var(--primary-light);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 800;
+        }
+        .decision-content h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+        .decision-content p { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+        .decision-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+        .decision-tag {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 6px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        /* ===== TESTS ===== */
+        .test-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .test-stat {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 24px;
+            text-align: center;
+        }
+        .test-stat-num {
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        .test-stat-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+        .test-categories {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        .test-cat-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .test-cat-item:last-child { border-bottom: none; }
+        .test-cat-name { font-size: 14px; font-weight: 600; }
+        .test-cat-count {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary);
+            background: var(--primary-light);
+            padding: 3px 12px;
+            border-radius: 100px;
+        }
+
+        /* ===== PRACTICAL ===== */
+        .practical-grid {
+            display: grid;
+            grid-template-columns: 1fr 60px 1fr;
+            gap: 0;
+            align-items: stretch;
+        }
+        .practical-col {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+        }
+        .practical-col h3 {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .practical-list { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+        .practical-list li {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            padding-left: 20px;
+            position: relative;
+        }
+        .practical-list li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: 700;
+        }
+        .practical-connector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .practical-plus {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 800;
+        }
+        .practical-result {
+            background: linear-gradient(135deg, var(--primary-light) 0%, #ecfdf5 100%);
+            border: 2px solid var(--primary);
+            border-radius: 16px;
+            padding: 32px;
+            text-align: center;
+            margin-top: 24px;
+        }
+        .practical-result h3 { font-size: 18px; font-weight: 800; color: var(--primary-dark); margin-bottom: 8px; justify-content: center; }
+        .practical-result p { font-size: 15px; color: var(--text-secondary); }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            background: var(--code-bg);
+            padding: 60px 24px;
+            text-align: center;
+        }
+        .footer-inner { max-width: 600px; margin: 0 auto; }
+        .footer h3 { color: white; font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+        .footer p { color: #94a3b8; font-size: 14px; margin-bottom: 28px; }
+        .footer-links { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+        .footer-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 24px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #e2e8f0;
+        }
+        .footer-link:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.3); }
+        .footer-copy { color: #475569; font-size: 12px; margin-top: 32px; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .hero { padding: 120px 20px 60px; }
+            .section { padding: 60px 20px; }
+            .hero-flow { gap: 6px; }
+            .flow-step { padding: 6px 10px; font-size: 12px; }
+            .decision-card { grid-template-columns: 1fr; }
+            .decision-num { width: 36px; height: 36px; font-size: 14px; }
+            .practical-grid { grid-template-columns: 1fr; gap: 16px; }
+            .practical-connector { transform: rotate(90deg); padding: 8px 0; }
+            .arch-diagram { padding: 20px; }
+            .match-card-header { padding: 20px 20px 0; }
+            .match-card-body { padding: 16px 20px 20px; }
+            .quality-table { font-size: 13px; }
+            .quality-table thead th, .quality-table tbody td { padding: 10px 14px; }
+        }
+
+        /* ===== ANIMATIONS ===== */
+        .fade-up {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .fade-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav" id="nav">
+    <div class="nav-inner">
+        <div class="nav-logo">📊 ETL Pipeline Portfolio</div>
+        <div class="nav-links">
+            <a href="#background">배경</a>
+            <a href="#architecture">아키텍처</a>
+            <a href="#match">담당업무</a>
+            <a href="#quality">품질검증</a>
+            <a href="#tech">기술스택</a>
+            <a href="#decisions">설계결정</a>
+            <a href="#tests">테스트</a>
+            <a href="#practical">실무연결</a>
+        </div>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-content fade-up">
+        <div class="hero-badge">🎯 Data Engineering Portfolio</div>
+        <h1>Airflow 기반 이커머스<br>ETL 파이프라인 & 데이터 마트 구축</h1>
+        <p class="hero-subtitle">이벤트 로그 수집부터 품질 검증, DB 적재, 분석용 마트 4종 구축까지<br>실무 수준의 데이터 파이프라인 전체를 설계·개발한 프로젝트입니다.</p>
+
+        <div class="hero-flow">
+            <span class="flow-step">🎲 이벤트 생성</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step">✅ 품질 검증</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step">🐘 PostgreSQL 적재</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step">📊 DM 4종 구축</span>
+        </div>
+
+        <div class="hero-meta">
+            <span class="meta-item"><strong>기간</strong>&nbsp; 2026.01 ~ 2026.02</span>
+            <span class="meta-item"><strong>유형</strong>&nbsp; 개인 프로젝트</span>
+            <span class="meta-item"><strong>역할</strong>&nbsp; 전체 설계 · 개발</span>
+            <span class="meta-item"><strong>규모</strong>&nbsp; Python 1,800+줄 / SQL 300+줄</span>
+        </div>
+
+        <div class="hero-actions">
+            <a href="https://github.com/jiminnote/ecommerce-kafka-project" target="_blank" class="btn btn-primary">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                GitHub 저장소
+            </a>
+            <a href="#match" class="btn btn-outline">💼 담당업무 매칭 보기</a>
+        </div>
+    </div>
+</section>
+
+<!-- BACKGROUND -->
+<section class="section" id="background">
+    <div class="fade-up">
+        <span class="section-label">01 — Background</span>
+        <h2 class="section-title">프로젝트 배경 & 목적</h2>
+        <p class="section-desc">금융권 ETL 운영 경험에서 느낀 과제를 체계적으로 해결한 프로젝트입니다.</p>
+    </div>
+    <div class="bg-cards fade-up">
+        <div class="bg-card">
+            <div class="bg-card-icon" style="background:#eff6ff;">💡</div>
+            <h3>왜 만들었는가</h3>
+            <p>실무에서 데이터 파이프라인을 운영하며 <strong>품질 검증 없이 적재되는 데이터</strong>, <strong>수동 마트 갱신</strong>, <strong>모니터링 부재</strong>를 반복 경험했습니다. 이를 자동화된 파이프라인으로 해결하고 포트폴리오화했습니다.</p>
+        </div>
+        <div class="bg-card">
+            <div class="bg-card-icon" style="background:#fef3c7;">🎯</div>
+            <h3>어떤 문제를 해결하는가</h3>
+            <p><strong>① 데이터 무결성:</strong> 7가지 자동 품질 검증으로 불량 데이터 적재 원천 차단<br>
+            <strong>② 운영 효율:</strong> Airflow DAG 기반 일 배치 자동화<br>
+            <strong>③ 분석 기반:</strong> 사용자/퍼널/상품/주문 4종 마트로 비즈니스 인사이트 즉시 도출</p>
+        </div>
+        <div class="bg-card">
+            <div class="bg-card-icon" style="background:#ecfdf5;">🏗️</div>
+            <h3>설계 원칙</h3>
+            <p><strong>멱등성(Idempotency):</strong> 재실행해도 중복 없는 DELETE+INSERT 패턴<br>
+            <strong>관측성(Observability):</strong> 품질 로그 + Slack 알림 + 리포트 자동 생성<br>
+            <strong>확장성:</strong> 이벤트 스키마 표준화, 마트 병렬 처리 구조</p>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- ARCHITECTURE -->
+<section class="section" id="architecture">
+    <div class="fade-up">
+        <span class="section-label">02 — Architecture</span>
+        <h2 class="section-title">파이프라인 아키텍처</h2>
+        <p class="section-desc">Airflow DAG가 전체 흐름을 오케스트레이션하며, 품질 검증 결과에 따라 PASS/FAIL 분기 처리합니다.</p>
+    </div>
+
+    <div class="arch-diagram fade-up">
+        <div class="arch-flow">
+            <!-- Generate -->
+            <div class="arch-node">
+                <div class="arch-box">
+                    <div class="arch-box-icon">🎲</div>
+                    <div class="arch-box-label">generate_events</div>
+                    <div class="arch-box-sub">500명 × 일별 이벤트</div>
+                </div>
+            </div>
+            <div class="arch-connector">→</div>
+            <!-- Validate -->
+            <div class="arch-node">
+                <div class="arch-box">
+                    <div class="arch-box-icon">🔍</div>
+                    <div class="arch-box-label">validate_quality</div>
+                    <div class="arch-box-sub">7가지 품질 검증</div>
+                </div>
+            </div>
+            <div class="arch-connector">→</div>
+            <!-- Branch -->
+            <div class="arch-node">
+                <div class="arch-box" style="border-color:rgba(245,158,11,0.4);">
+                    <div class="arch-box-icon">⑂</div>
+                    <div class="arch-box-label">quality_branch</div>
+                    <div class="arch-box-sub">BranchPythonOperator</div>
+                </div>
+                <div style="display:flex; gap:12px; margin-top:8px;">
+                    <span class="arch-branch-label arch-branch-pass">✓ PASS</span>
+                    <span class="arch-branch-label arch-branch-fail">✕ FAIL</span>
+                </div>
+            </div>
+            <div class="arch-connector">→</div>
+            <!-- PASS path -->
+            <div class="arch-node">
+                <div class="arch-box" style="border-color:rgba(16,185,129,0.3);">
+                    <div class="arch-box-icon">🐘</div>
+                    <div class="arch-box-label">load_to_database</div>
+                    <div class="arch-box-sub">Bulk Insert (1000건/batch)</div>
+                </div>
+                <div style="margin-top:8px; color:#94a3b8; font-size:11px;">↓ 병렬 실행</div>
+                <div class="arch-mart-group" style="margin-top:6px;">
+                    <div class="arch-mart-item"><div class="arch-box-label">👤 User DM</div></div>
+                    <div class="arch-mart-item"><div class="arch-box-label">🔄 Funnel DM</div></div>
+                    <div class="arch-mart-item"><div class="arch-box-label">📦 Product DM</div></div>
+                    <div class="arch-mart-item"><div class="arch-box-label">🛒 Order DM</div></div>
+                </div>
+            </div>
+            <div class="arch-connector">→</div>
+            <!-- End -->
+            <div class="arch-node">
+                <div class="arch-box">
+                    <div class="arch-box-icon">📋</div>
+                    <div class="arch-box-label">quality_log</div>
+                    <div class="arch-box-sub">결과 DB 저장</div>
+                </div>
+                <div class="arch-connector" style="padding-top:8px;">↓</div>
+                <div class="arch-box">
+                    <div class="arch-box-icon">📊</div>
+                    <div class="arch-box-label">quality_report</div>
+                    <div class="arch-box-sub">Slack 알림 + 리포트</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="arch-legend">
+            <div class="arch-legend-item">
+                <div class="arch-legend-dot" style="background:rgba(255,255,255,0.15);"></div>
+                Python Operator
+            </div>
+            <div class="arch-legend-item">
+                <div class="arch-legend-dot" style="background:rgba(245,158,11,0.4);"></div>
+                Branch Operator
+            </div>
+            <div class="arch-legend-item">
+                <div class="arch-legend-dot" style="background:rgba(245,158,11,0.8);"></div>
+                Postgres Operator (마트)
+            </div>
+            <div class="arch-legend-item">
+                <div class="arch-legend-dot" style="background:rgba(16,185,129,0.4);"></div>
+                DB 적재
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- MATCH SECTION -->
+<section class="section" id="match">
+    <div class="fade-up">
+        <span class="section-label">03 — Job Matching ★</span>
+        <h2 class="section-title">굿리치 담당업무 매칭</h2>
+        <p class="section-desc">채용 공고의 핵심 업무와 이 프로젝트의 구현 내용을 1:1 매칭했습니다.</p>
+    </div>
+
+    <div class="match-grid fade-up">
+        <!-- 4-1. Airflow ETL -->
+        <div class="match-card">
+            <div class="match-card-header">
+                <div class="match-card-num" style="background:#dbeafe; color:#2563eb;">1</div>
+                <div>
+                    <h3>Airflow ETL 설계 · 개발</h3>
+                    <div class="subtitle">데이터 수집 → 검증 → 적재 → 마트 전 과정 자동화</div>
+                </div>
+            </div>
+            <div class="match-card-body">
+                <div class="match-detail-grid">
+                    <div class="match-detail-item">
+                        <h4>📐 DAG 구조</h4>
+                        <p>10개 Task로 구성된 단일 DAG.<br>
+                        <code>PythonOperator</code> 6개 + <code>PostgresOperator</code> 4개로 역할 분리.</p>
+                    </div>
+                    <div class="match-detail-item">
+                        <h4>🔗 Task 의존성</h4>
+                        <p>선형 → 분기 → 병렬 → 합류 패턴.<br>
+                        마트 4종이 <code>load_to_database</code> 이후 <strong>동시 병렬 실행</strong>되어 처리 시간 단축.</p>
+                    </div>
+                    <div class="match-detail-item">
+                        <h4>⑂ 분기 처리</h4>
+                        <p><code>BranchPythonOperator</code>로 품질 PASS/FAIL에 따라 적재 또는 알림 경로를 동적 선택.</p>
+                    </div>
+                    <div class="match-detail-item">
+                        <h4>♻️ 멱등성 보장</h4>
+                        <p>모든 마트 SQL이 <code>DELETE WHERE date='{{ ds }}'</code> → <code>INSERT</code> 패턴. 재실행 시 중복 없이 동일 결과.</p>
+                    </div>
+                    <div class="match-detail-item">
+                        <h4>🔔 모니터링</h4>
+                        <p><code>on_failure_callback</code>으로 Task 실패 시 Slack 즉시 알림. <code>TriggerRule.NONE_FAILED_MIN_ONE_SUCCESS</code>로 공통 종료 Task 보장.</p>
+                    </div>
+                    <div class="match-detail-item">
+                        <h4>⚙️ 운영 설정</h4>
+                        <p>재시도 2회, 5분 간격. 실행 타임아웃 1시간. <code>max_active_runs=1</code>로 동시 실행 방지. <code>catchup=False</code>로 백필 차단.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4-2. DW/DM -->
+        <div class="match-card">
+            <div class="match-card-header">
+                <div class="match-card-num" style="background:#fef3c7; color:#d97706;">2</div>
+                <div>
+                    <h3>DW / DM 설계 · 구축</h3>
+                    <div class="subtitle">Raw Layer → Mart Layer 2계층 설계, 4종 분석 마트</div>
+                </div>
+            </div>
+            <div class="match-card-body">
+                <div class="dm-cards">
+                    <div class="dm-card" style="border-color:#3b82f6;">
+                        <h4>👤 사용자 일별 마트</h4>
+                        <p>사용자별 일 단위 행동 요약. 세션 수, 이벤트 유형별 카운트, 구매 금액, 체류 시간.</p>
+                        <div class="dm-columns">
+                            <span class="dm-col">session_count</span>
+                            <span class="dm-col">page_view_count</span>
+                            <span class="dm-col">purchase_count</span>
+                            <span class="dm-col">total_purchase_amount</span>
+                            <span class="dm-col">session_duration_total</span>
+                        </div>
+                    </div>
+                    <div class="dm-card" style="border-color:#10b981;">
+                        <h4>🔄 전환 퍼널 마트</h4>
+                        <p>플랫폼별 일간 전환 퍼널. 조회→클릭→장바구니→구매 4단계 전환율 자동 계산.</p>
+                        <div class="dm-columns">
+                            <span class="dm-col">step1_viewers</span>
+                            <span class="dm-col">step2_clickers</span>
+                            <span class="dm-col">step3_cart_adders</span>
+                            <span class="dm-col">step4_purchasers</span>
+                            <span class="dm-col">overall_conversion_rate</span>
+                        </div>
+                    </div>
+                    <div class="dm-card" style="border-color:#f59e0b;">
+                        <h4>📦 상품 일별 마트</h4>
+                        <p>상품별 일간 행동 집계. 클릭·장바구니·구매·매출·전환율 한 테이블에 통합.</p>
+                        <div class="dm-columns">
+                            <span class="dm-col">click_count</span>
+                            <span class="dm-col">cart_add_count</span>
+                            <span class="dm-col">revenue</span>
+                            <span class="dm-col">unique_buyers</span>
+                            <span class="dm-col">conversion_rate</span>
+                        </div>
+                    </div>
+                    <div class="dm-card" style="border-color:#8b5cf6;">
+                        <h4>🛒 주문 마트</h4>
+                        <p>주문 단위 디테일 테이블. JSONB에서 할인·배송비·쿠폰 파싱하여 정규화.</p>
+                        <div class="dm-columns">
+                            <span class="dm-col">total_amount</span>
+                            <span class="dm-col">payment_method</span>
+                            <span class="dm-col">discount_amount</span>
+                            <span class="dm-col">shipping_fee</span>
+                            <span class="dm-col">coupon_code</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4-3. Data Model -->
+        <div class="match-card">
+            <div class="match-card-header">
+                <div class="match-card-num" style="background:#ecfdf5; color:#059669;">3</div>
+                <div>
+                    <h3>데이터 모델 설계</h3>
+                    <div class="subtitle">JSON Schema 기반 5가지 이벤트 스키마 표준화</div>
+                </div>
+            </div>
+            <div class="match-card-body">
+                <p style="font-size:14px; color:var(--text-secondary); line-height:1.7; margin-bottom:16px;">
+                    이커머스 사용자 행동을 <strong>5가지 이벤트 유형</strong>으로 표준화하고, JSON Schema draft-07 기반으로 필드별 타입·형식·범위·필수 여부를 엄격히 정의했습니다.
+                    플랫폼-디바이스 정합성 규칙과 전환 퍼널 순서 규칙도 스키마에 명시합니다.
+                </p>
+                <div class="schema-tags">
+                    <div class="schema-tag">👁️ page_view<span style="color:var(--text-secondary); font-weight:400; font-size:12px;">&nbsp;— page_url, page_type, referrer</span></div>
+                    <div class="schema-tag">👆 click<span style="color:var(--text-secondary); font-weight:400; font-size:12px;">&nbsp;— element_id, element_type, position</span></div>
+                    <div class="schema-tag">🛒 add_to_cart<span style="color:var(--text-secondary); font-weight:400; font-size:12px;">&nbsp;— product_id, quantity, unit_price</span></div>
+                    <div class="schema-tag">💳 purchase<span style="color:var(--text-secondary); font-weight:400; font-size:12px;">&nbsp;— order_id, total_amount, payment_method</span></div>
+                    <div class="schema-tag">🔍 search<span style="color:var(--text-secondary); font-weight:400; font-size:12px;">&nbsp;— search_query, result_count</span></div>
+                </div>
+                <div class="match-detail-grid" style="margin-top:16px;">
+                    <div class="match-detail-item">
+                        <h4>🏷️ 공통 필드</h4>
+                        <p><code>event_id</code> (UUID v4), <code>user_id</code> (U000001 패턴), <code>session_id</code>, <code>timestamp</code> (ISO 8601), <code>platform</code>, <code>device_type</code></p>
+                    </div>
+                    <div class="match-detail-item">
+                        <h4>📏 정합성 규칙</h4>
+                        <p>iOS/Android → mobile 고정. Web → desktop/mobile/tablet. 동일 세션 내 플랫폼 변경 불가. 전환 퍼널 순서 보장.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- QUALITY -->
+<section class="section" id="quality">
+    <div class="fade-up">
+        <span class="section-label">04 — Data Quality</span>
+        <h2 class="section-title">데이터 품질 검증 체계</h2>
+        <p class="section-desc">적재 전 7가지 검증을 자동 실행하여, 불량 데이터가 마트에 유입되는 것을 원천 차단합니다.</p>
+    </div>
+
+    <div class="quality-table-wrap fade-up">
+        <table class="quality-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>검증 항목</th>
+                    <th>검증 유형</th>
+                    <th>검증 내용</th>
+                    <th>기준</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td><strong>필수 필드 NULL 검사</strong></td>
+                    <td><span class="badge-type">null_check</span></td>
+                    <td>공통 5개 필드 + 이벤트별 필수 필드 누락 여부</td>
+                    <td><span class="badge badge-pass">≥ 99%</span></td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td><strong>event_id 중복 검사</strong></td>
+                    <td><span class="badge-type">duplicate_check</span></td>
+                    <td>UUID v4 기반 event_id 고유성 확인</td>
+                    <td><span class="badge badge-pass">≥ 99%</span></td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td><strong>필드 값 범위 검사</strong></td>
+                    <td><span class="badge-type">range_check</span></td>
+                    <td>수량(1~99), 단가(~1천만), 총액(~1억), 이벤트 유형 유효성</td>
+                    <td><span class="badge badge-pass">≥ 99%</span></td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td><strong>전환 퍼널 순서 검증</strong></td>
+                    <td><span class="badge-type">sequence_check</span></td>
+                    <td>purchase 전 add_to_cart, cart 전 view/click 선행 확인</td>
+                    <td><span class="badge badge-pass">≥ 99%</span></td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td><strong>타임스탬프 유효성 검사</strong></td>
+                    <td><span class="badge-type">range_check</span></td>
+                    <td>ISO 8601 파싱 가능 여부, 연도 범위(2020~2030)</td>
+                    <td><span class="badge badge-pass">≥ 99%</span></td>
+                </tr>
+                <tr>
+                    <td>6</td>
+                    <td><strong>주문 금액 정합성 검사</strong></td>
+                    <td><span class="badge-type">integrity_check</span></td>
+                    <td>total_amount = Σ(unit_price×qty) − discount + shipping (1원 오차 허용)</td>
+                    <td><span class="badge badge-pass">≥ 99%</span></td>
+                </tr>
+                <tr>
+                    <td>7</td>
+                    <td><strong>플랫폼-디바이스 정합성</strong></td>
+                    <td><span class="badge-type">consistency_check</span></td>
+                    <td>iOS/Android→mobile, Web→desktop/mobile/tablet, 세션 내 플랫폼 불변</td>
+                    <td><span class="badge badge-pass">≥ 99%</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="quality-branch fade-up">
+        <h3>⑂ PASS / FAIL 분기 로직</h3>
+        <div class="branch-flow">
+            <div class="branch-node">
+                <div class="branch-box branch-box-check">🔍 validate_quality<br><small>7가지 검증 실행</small></div>
+            </div>
+            <span class="branch-arrow">→</span>
+            <div class="branch-node">
+                <div class="branch-box" style="background:#fef3c7; color:#92400e;">⑂ quality_branch<br><small>BranchPythonOperator</small></div>
+            </div>
+            <span class="branch-arrow">→</span>
+            <div class="branch-split">
+                <div class="branch-box branch-box-pass">✅ PASS → load_to_database → 마트 4종 병렬 생성</div>
+                <div class="branch-box branch-box-fail">❌ FAIL → quality_alert → Slack 알림 전송</div>
+            </div>
+            <span class="branch-arrow">→</span>
+            <div class="branch-node">
+                <div class="branch-box" style="background:#f1f5f9; color:var(--text);">📋 save_quality_log<br>→ quality_report</div>
+            </div>
+        </div>
+        <p style="font-size:13px; color:var(--text-secondary); margin-top:16px;">
+            <code>TriggerRule.NONE_FAILED_MIN_ONE_SUCCESS</code>를 적용하여 PASS/FAIL 어느 경로든 품질 로그 저장과 리포트 생성이 반드시 실행됩니다.
+        </p>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- TECH STACK -->
+<section class="section" id="tech">
+    <div class="fade-up">
+        <span class="section-label">05 — Tech Stack</span>
+        <h2 class="section-title">기술 스택</h2>
+        <p class="section-desc">검증된 오픈소스 기술 조합으로 실무 환경에 가까운 파이프라인을 구성했습니다.</p>
+    </div>
+
+    <div class="tech-grid fade-up">
+        <div class="tech-item">
+            <div class="tech-icon" style="background:#e8f5e9;">🌀</div>
+            <div>
+                <div class="tech-name">Apache Airflow 2.7</div>
+                <div class="tech-role">워크플로 오케스트레이션</div>
+            </div>
+        </div>
+        <div class="tech-item">
+            <div class="tech-icon" style="background:#e3f2fd;">🐘</div>
+            <div>
+                <div class="tech-name">PostgreSQL 15</div>
+                <div class="tech-role">DW / DM 저장소</div>
+            </div>
+        </div>
+        <div class="tech-item">
+            <div class="tech-icon" style="background:#fff8e1;">🐍</div>
+            <div>
+                <div class="tech-name">Python 3.11</div>
+                <div class="tech-role">ETL 로직 / 이벤트 생성</div>
+            </div>
+        </div>
+        <div class="tech-item">
+            <div class="tech-icon" style="background:#fce4ec;">🧪</div>
+            <div>
+                <div class="tech-name">pytest + Coverage</div>
+                <div class="tech-role">단위·통합 테스트</div>
+            </div>
+        </div>
+        <div class="tech-item">
+            <div class="tech-icon" style="background:#e8eaf6;">🐳</div>
+            <div>
+                <div class="tech-name">Docker Compose</div>
+                <div class="tech-role">컨테이너 환경 구성</div>
+            </div>
+        </div>
+        <div class="tech-item">
+            <div class="tech-icon" style="background:#f3e5f5;">📨</div>
+            <div>
+                <div class="tech-name">Slack Webhook</div>
+                <div class="tech-role">파이프라인 모니터링</div>
+            </div>
+        </div>
+        <div class="tech-item">
+            <div class="tech-icon" style="background:#fff3e0;">📋</div>
+            <div>
+                <div class="tech-name">JSON Schema</div>
+                <div class="tech-role">이벤트 스키마 표준화</div>
+            </div>
+        </div>
+        <div class="tech-item">
+            <div class="tech-icon" style="background:#e0f7fa;">⚡</div>
+            <div>
+                <div class="tech-name">PySpark 3.5</div>
+                <div class="tech-role">대용량 배치 처리</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- DECISIONS -->
+<section class="section" id="decisions">
+    <div class="fade-up">
+        <span class="section-label">06 — Design Decisions</span>
+        <h2 class="section-title">주요 설계 결정</h2>
+        <p class="section-desc">"왜 이렇게 만들었는가"에 대한 기술적 의사결정 기록입니다.</p>
+    </div>
+
+    <div class="decision-list fade-up">
+        <div class="decision-card">
+            <div class="decision-num">1</div>
+            <div class="decision-content">
+                <h3>DELETE + INSERT 멱등성 패턴</h3>
+                <p>UPSERT(MERGE) 대신 <strong>DELETE WHERE date='{{ ds }}' → INSERT</strong> 패턴을 선택했습니다. 
+                Airflow 재실행 시 중복 적재 없이 동일 결과를 보장하며, 마트 SQL이 단순해져 유지보수가 쉽습니다. 
+                트랜잭션 내에서 실행되므로 데이터 무결성도 보장됩니다.</p>
+                <div class="decision-tags">
+                    <span class="decision-tag">멱등성</span>
+                    <span class="decision-tag">재실행 안전성</span>
+                    <span class="decision-tag">SQL 단순화</span>
+                </div>
+            </div>
+        </div>
+        <div class="decision-card">
+            <div class="decision-num">2</div>
+            <div class="decision-content">
+                <h3>마트 4종 병렬 실행</h3>
+                <p>마트 생성 Task를 <strong>순차 대신 병렬</strong>로 배치했습니다. 
+                <code>[user_mart, funnel_mart, product_mart, order_mart]</code>가 동시에 실행되어 처리 시간을 단축합니다. 
+                모든 마트가 <code>raw_events</code>를 읽기 전용으로 참조하므로 병렬 실행해도 데이터 충돌이 없습니다.</p>
+                <div class="decision-tags">
+                    <span class="decision-tag">병렬 처리</span>
+                    <span class="decision-tag">처리시간 단축</span>
+                    <span class="decision-tag">읽기 전용 참조</span>
+                </div>
+            </div>
+        </div>
+        <div class="decision-card">
+            <div class="decision-num">3</div>
+            <div class="decision-content">
+                <h3>품질 검증 선행 + 분기 처리</h3>
+                <p>적재 <strong>전에</strong> 품질 검증을 수행하고, FAIL 시 적재를 차단합니다. 
+                <code>BranchPythonOperator</code>로 PASS/FAIL 경로를 동적 선택하여, 
+                불량 데이터가 마트까지 전파되는 것을 원천 방지합니다.</p>
+                <div class="decision-tags">
+                    <span class="decision-tag">선행 검증</span>
+                    <span class="decision-tag">불량 데이터 차단</span>
+                    <span class="decision-tag">동적 분기</span>
+                </div>
+            </div>
+        </div>
+        <div class="decision-card">
+            <div class="decision-num">4</div>
+            <div class="decision-content">
+                <h3>XCom 기반 Task 간 데이터 전달</h3>
+                <p>Task 간 메타데이터(파일 경로, 이벤트 수, 품질 리포트)를 <strong>XCom</strong>으로 전달합니다. 
+                각 Task가 독립적으로 실행 가능하면서도, 파이프라인 전체의 컨텍스트를 공유합니다. 
+                대용량 데이터 자체는 파일/DB로, 메타데이터만 XCom으로 분리하여 Airflow 부하를 최소화했습니다.</p>
+                <div class="decision-tags">
+                    <span class="decision-tag">Task 독립성</span>
+                    <span class="decision-tag">XCom 경량화</span>
+                    <span class="decision-tag">파일 기반 데이터 전달</span>
+                </div>
+            </div>
+        </div>
+        <div class="decision-card">
+            <div class="decision-num">5</div>
+            <div class="decision-content">
+                <h3>ON CONFLICT DO NOTHING 중복 방지</h3>
+                <p>raw_events 적재 시 <code>ON CONFLICT (event_id) DO NOTHING</code>을 사용합니다. 
+                UUID v4 기반 event_id를 PK로 하여, 동일 이벤트가 재적재되어도 중복 없이 무시됩니다. 
+                Batch Insert(1,000건 단위)와 결합하여 대량 적재 성능도 확보했습니다.</p>
+                <div class="decision-tags">
+                    <span class="decision-tag">중복 방지</span>
+                    <span class="decision-tag">Batch Insert</span>
+                    <span class="decision-tag">UUID PK</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- TESTS -->
+<section class="section" id="tests">
+    <div class="fade-up">
+        <span class="section-label">07 — Testing</span>
+        <h2 class="section-title">테스트 & 품질</h2>
+        <p class="section-desc">pytest 기반 30+ 테스트 케이스로 이벤트 생성기, 품질 검증기, 알림 모듈을 커버합니다.</p>
+    </div>
+
+    <div class="test-summary fade-up">
+        <div class="test-stat">
+            <div class="test-stat-num">30+</div>
+            <div class="test-stat-label">테스트 케이스</div>
+        </div>
+        <div class="test-stat">
+            <div class="test-stat-num">3</div>
+            <div class="test-stat-label">테스트 모듈</div>
+        </div>
+        <div class="test-stat">
+            <div class="test-stat-num">7</div>
+            <div class="test-stat-label">테스트 카테고리</div>
+        </div>
+        <div class="test-stat">
+            <div class="test-stat-num">0</div>
+            <div class="test-stat-label">외부 의존성 (Mock 처리)</div>
+        </div>
+    </div>
+
+    <div class="test-categories fade-up">
+        <div class="test-cat-item">
+            <span class="test-cat-name">📐 이벤트 구조 유효성 (필수 필드, 유형, 고유성, 정렬)</span>
+            <span class="test-cat-count">7개</span>
+        </div>
+        <div class="test-cat-item">
+            <span class="test-cat-name">📱 플랫폼-디바이스 정합성 (iOS/Android/Web 규칙)</span>
+            <span class="test-cat-count">6개</span>
+        </div>
+        <div class="test-cat-item">
+            <span class="test-cat-name">🔄 전환 퍼널 로직 (purchase→cart→view 순서)</span>
+            <span class="test-cat-count">5개</span>
+        </div>
+        <div class="test-cat-item">
+            <span class="test-cat-name">🧮 품질 검증기 단위 테스트 (NULL/중복/범위/순서/정합성)</span>
+            <span class="test-cat-count">7개</span>
+        </div>
+        <div class="test-cat-item">
+            <span class="test-cat-name">🔗 통합 테스트 (전체 검증 → 리포트 구조 → JSONL 파일)</span>
+            <span class="test-cat-count">4개</span>
+        </div>
+        <div class="test-cat-item">
+            <span class="test-cat-name">📨 Slack 알림 테스트 (초기화/URL 미설정/페이로드)</span>
+            <span class="test-cat-count">6개</span>
+        </div>
+        <div class="test-cat-item">
+            <span class="test-cat-name">🌐 엣지 케이스 (소규모/대규모/날짜/주말 트래픽)</span>
+            <span class="test-cat-count">4개</span>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- PRACTICAL -->
+<section class="section" id="practical">
+    <div class="fade-up">
+        <span class="section-label">08 — Practical Connection</span>
+        <h2 class="section-title">실무 연결 포인트</h2>
+        <p class="section-desc">이 프로젝트의 구현 경험이 실무에서 어떻게 연결되는지를 정리했습니다.</p>
+    </div>
+
+    <div class="practical-grid fade-up">
+        <div class="practical-col">
+            <h3>🏗️ 이 프로젝트에서 구현한 것</h3>
+            <ul class="practical-list">
+                <li>Airflow DAG 10개 Task 설계·구현으로 ETL 전 과정 자동화</li>
+                <li>7가지 데이터 품질 검증 체계 설계 및 자동화</li>
+                <li>PostgreSQL 기반 DW/DM 2계층 설계, 마트 4종 구축</li>
+                <li>멱등성 보장 DELETE+INSERT 패턴으로 운영 안정성 확보</li>
+                <li>pytest 30+ 케이스로 핵심 로직 검증 자동화</li>
+                <li>Slack Webhook 기반 실시간 파이프라인 모니터링</li>
+                <li>Docker Compose로 전체 인프라 코드화(IaC)</li>
+            </ul>
+        </div>
+        <div class="practical-connector">
+            <div class="practical-plus">+</div>
+        </div>
+        <div class="practical-col">
+            <h3>💼 실무에서 적용했던 경험</h3>
+            <ul class="practical-list">
+                <li>금융권 대규모 데이터 ETL 파이프라인 운영 경험</li>
+                <li>데이터 정합성 이슈 트러블슈팅 및 재발 방지 체계 구축</li>
+                <li>DW/DM 설계 및 비즈니스 요구사항 기반 마트 구축</li>
+                <li>배치 실패 대응 및 멱등성 기반 재실행 전략 수립</li>
+                <li>테스트 자동화를 통한 배포 안정성 향상</li>
+                <li>장애 알림 체계 구축 및 운영 프로세스 개선</li>
+                <li>온프레미스/클라우드 환경 인프라 운영</li>
+            </ul>
+        </div>
+    </div>
+    <div class="practical-result fade-up">
+        <h3>💎 = 굿리치에서의 기여 가치</h3>
+        <p>금융권 ETL 운영 경험과 체계적인 데이터 파이프라인 설계 역량을 바탕으로,<br>
+        <strong>굿리치의 데이터 인프라 고도화와 안정적인 DW/DM 운영</strong>에 즉시 기여할 수 있습니다.</p>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+    <div class="footer-inner">
+        <h3>감사합니다</h3>
+        <p>프로젝트에 대해 더 궁금한 점이 있으시면 편하게 연락해 주세요.</p>
+        <div class="footer-links">
+            <a href="https://github.com/jiminnote/ecommerce-kafka-project" target="_blank" class="footer-link">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                GitHub
+            </a>
+            <a href="mailto:wlals3968@naver.com" class="footer-link">
+                ✉️ wlals3968@naver.com
+            </a>
+        </div>
+        <div class="footer-copy">© 2026 이커머스 ETL 파이프라인 포트폴리오</div>
+    </div>
+</footer>
+
+<script>
+    // Nav scroll effect
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+        nav.classList.toggle('scrolled', window.scrollY > 10);
+    });
+
+    // Fade-up animation on scroll
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
