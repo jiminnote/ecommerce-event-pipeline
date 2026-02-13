@@ -1,7 +1,7 @@
 # 이커머스 행동 로그 파이프라인
 
 이커머스 사용자 행동 이벤트를 **정의→생성→수집→검증→적재→마트 생성→모니터링**까지 End-to-End로 처리하는 데이터 파이프라인입니다.
-
+[https://jiminnote.github.io/ecommerce-event-pipeline/](https://jiminnote.github.io/ecommerce-event-pipeline/)
 ## 프로젝트 목적
 
 - 사용자 행동 데이터(page_view, click, add_to_cart, purchase, search)의 **이벤트 스키마 설계**
