@@ -817,11 +817,10 @@
             <span class="meta-item"><strong>기간</strong>&nbsp; 2026.01 ~ 2026.02</span>
             <span class="meta-item"><strong>유형</strong>&nbsp; 개인 프로젝트</span>
             <span class="meta-item"><strong>역할</strong>&nbsp; 전체 설계 · 개발</span>
-            <span class="meta-item"><strong>규모</strong>&nbsp; Python 1,800+줄 / SQL 300+줄</span>
         </div>
 
         <div class="hero-actions">
-            <a href="https://github.com/jiminnote/ecommerce-kafka-project" target="_blank" class="btn btn-primary">
+            <a href="https://github.com/jiminnote/ecommerce-event-pipeline" target="_blank" class="btn btn-primary">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
                 GitHub 저장소
             </a>
@@ -960,11 +959,9 @@
 
 <!-- MATCH SECTION -->
 <section class="section" id="match">
-    <div class="fade-up">
-        <span class="section-label">03 — Job Matching ★</span>
-        <h2 class="section-title">굿리치 담당업무 매칭</h2>
-        <p class="section-desc">채용 공고의 핵심 업무와 이 프로젝트의 구현 내용을 1:1 매칭했습니다.</p>
-    </div>
+    <span class="section-label">03 — Core Implementation</span>
+        <h2 class="section-title">핵심 구현 내용</h2>
+            <p class="section-desc">이 프로젝트에서 설계·구현한 핵심 기능을 3가지 영역으로 정리했습니다.</p>
 
     <div class="match-grid fade-up">
         <!-- 4-1. Airflow ETL -->
@@ -1121,7 +1118,6 @@
                     <th>검증 항목</th>
                     <th>검증 유형</th>
                     <th>검증 내용</th>
-                    <th>기준</th>
                 </tr>
             </thead>
             <tbody>
@@ -1130,49 +1126,42 @@
                     <td><strong>필수 필드 NULL 검사</strong></td>
                     <td><span class="badge-type">null_check</span></td>
                     <td>공통 5개 필드 + 이벤트별 필수 필드 누락 여부</td>
-                    <td><span class="badge badge-pass">≥ 99%</span></td>
                 </tr>
                 <tr>
                     <td>2</td>
                     <td><strong>event_id 중복 검사</strong></td>
                     <td><span class="badge-type">duplicate_check</span></td>
                     <td>UUID v4 기반 event_id 고유성 확인</td>
-                    <td><span class="badge badge-pass">≥ 99%</span></td>
                 </tr>
                 <tr>
                     <td>3</td>
                     <td><strong>필드 값 범위 검사</strong></td>
                     <td><span class="badge-type">range_check</span></td>
                     <td>수량(1~99), 단가(~1천만), 총액(~1억), 이벤트 유형 유효성</td>
-                    <td><span class="badge badge-pass">≥ 99%</span></td>
                 </tr>
                 <tr>
                     <td>4</td>
                     <td><strong>전환 퍼널 순서 검증</strong></td>
                     <td><span class="badge-type">sequence_check</span></td>
                     <td>purchase 전 add_to_cart, cart 전 view/click 선행 확인</td>
-                    <td><span class="badge badge-pass">≥ 99%</span></td>
                 </tr>
                 <tr>
                     <td>5</td>
                     <td><strong>타임스탬프 유효성 검사</strong></td>
                     <td><span class="badge-type">range_check</span></td>
                     <td>ISO 8601 파싱 가능 여부, 연도 범위(2020~2030)</td>
-                    <td><span class="badge badge-pass">≥ 99%</span></td>
                 </tr>
                 <tr>
                     <td>6</td>
                     <td><strong>주문 금액 정합성 검사</strong></td>
                     <td><span class="badge-type">integrity_check</span></td>
                     <td>total_amount = Σ(unit_price×qty) − discount + shipping (1원 오차 허용)</td>
-                    <td><span class="badge badge-pass">≥ 99%</span></td>
                 </tr>
                 <tr>
                     <td>7</td>
                     <td><strong>플랫폼-디바이스 정합성</strong></td>
                     <td><span class="badge-type">consistency_check</span></td>
                     <td>iOS/Android→mobile, Web→desktop/mobile/tablet, 세션 내 플랫폼 불변</td>
-                    <td><span class="badge badge-pass">≥ 99%</span></td>
                 </tr>
             </tbody>
         </table>
@@ -1262,13 +1251,6 @@
             <div>
                 <div class="tech-name">JSON Schema</div>
                 <div class="tech-role">이벤트 스키마 표준화</div>
-            </div>
-        </div>
-        <div class="tech-item">
-            <div class="tech-icon" style="background:#e0f7fa;">⚡</div>
-            <div>
-                <div class="tech-name">PySpark 3.5</div>
-                <div class="tech-role">대용량 배치 처리</div>
             </div>
         </div>
     </div>
@@ -1438,7 +1420,7 @@
                 <li>PostgreSQL 기반 DW/DM 2계층 설계, 마트 4종 구축</li>
                 <li>멱등성 보장 DELETE+INSERT 패턴으로 운영 안정성 확보</li>
                 <li>pytest 30+ 케이스로 핵심 로직 검증 자동화</li>
-                <li>Slack Webhook 기반 실시간 파이프라인 모니터링</li>
+                <li>Slack Webhook(Mock 기반 구현) 기반 실시간 파이프라인 모니터링</li>
                 <li>Docker Compose로 전체 인프라 코드화(IaC)</li>
             </ul>
         </div>
@@ -1450,7 +1432,6 @@
             <ul class="practical-list">
                 <li>금융권 대규모 데이터 ETL 파이프라인 운영 경험</li>
                 <li>데이터 정합성 이슈 트러블슈팅 및 재발 방지 체계 구축</li>
-                <li>DW/DM 설계 및 비즈니스 요구사항 기반 마트 구축</li>
                 <li>배치 실패 대응 및 멱등성 기반 재실행 전략 수립</li>
                 <li>테스트 자동화를 통한 배포 안정성 향상</li>
                 <li>장애 알림 체계 구축 및 운영 프로세스 개선</li>
@@ -1459,9 +1440,9 @@
         </div>
     </div>
     <div class="practical-result fade-up">
-        <h3>💎 = 굿리치에서의 기여 가치</h3>
+        <h3>💎 = 채용 공고 담당업무 매칭</h3>
         <p>금융권 ETL 운영 경험과 체계적인 데이터 파이프라인 설계 역량을 바탕으로,<br>
-        <strong>굿리치의 데이터 인프라 고도화와 안정적인 DW/DM 운영</strong>에 즉시 기여할 수 있습니다.</p>
+        <strong>데이터 인프라 고도화와 안정적인 DW/DM 운영</strong>에 즉시 기여할 수 있습니다.</p>
     </div>
 </section>
 
@@ -1471,7 +1452,7 @@
         <h3>감사합니다</h3>
         <p>프로젝트에 대해 더 궁금한 점이 있으시면 편하게 연락해 주세요.</p>
         <div class="footer-links">
-            <a href="https://github.com/jiminnote/ecommerce-kafka-project" target="_blank" class="footer-link">
+            <a href="https://github.com/jiminnote/ecommerce-event-pipeline" target="_blank" class="footer-link">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
                 GitHub
             </a>
