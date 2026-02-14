@@ -25,8 +25,11 @@ from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.utils.trigger_rule import TriggerRule
 
 import json
+import logging
 import os
 import sys
+
+logger = logging.getLogger(__name__)
 
 # 프로젝트 경로 추가
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -36,22 +39,26 @@ sys.path.insert(0, PROJECT_DIR)
 # ========== 모니터링 콜백 ==========
 
 def on_failure_callback(context):
-    """Task 실패 시 Slack 알림"""
+    """Task 실패 시 Slack 알림 (retry 소진 후 최종 실패 시에만 발송)"""
     from scripts.slack_alert import SlackAlert
 
-    task_id = context.get("task_instance").task_id
+    ti = context.get("task_instance")
+    task_id = ti.task_id
     dag_id = context.get("dag").dag_id
     exec_date = context.get("ds")
     error = context.get("exception")
+    try_number = ti.try_number
+    max_tries = ti.max_tries
 
     alert_msg = (
         f"[ALERT] 파이프라인 실패 알림\n"
         f"DAG: {dag_id}\n"
         f"Task: {task_id}\n"
         f"Date: {exec_date}\n"
+        f"Try: {try_number}/{max_tries}\n"
         f"Error: {str(error)[:200]}"
     )
-    print(alert_msg)
+    logger.error(alert_msg)
 
     slack = SlackAlert()
     slack.send_pipeline_failure(
@@ -62,6 +69,36 @@ def on_failure_callback(context):
     )
 
 
+def on_sla_miss_callback(dag, task_list, blocking_task_list, slas, blocking_tis):
+    """SLA 위반 시 Slack 알림 (시뮬레이션)"""
+    from scripts.slack_alert import SlackAlert
+
+    missed_tasks = ", ".join([str(t) for t in task_list])
+    alert_msg = (
+        f"[SLA MISS] DAG: {dag.dag_id}\n"
+        f"Tasks: {missed_tasks}\n"
+        f"Blocking: {', '.join([str(t) for t in blocking_task_list])}"
+    )
+    logger.warning(alert_msg)
+
+    slack = SlackAlert()
+    slack.send_custom(
+        title="[SLA MISS] 파이프라인 SLA 위반",
+        message=alert_msg,
+        color="#FFA500",
+    )
+
+
+def on_retry_callback(context):
+    """Task 재시도 시 로그 기록"""
+    ti = context.get("task_instance")
+    logger.warning(
+        f"[RETRY] Task '{ti.task_id}' 재시도 "
+        f"({ti.try_number}/{ti.max_tries}) - "
+        f"Error: {str(context.get('exception', 'N/A'))[:100]}"
+    )
+
+
 # ========== DAG 기본 설정 ==========
 
 default_args = {
@@ -69,10 +106,14 @@ default_args = {
     "depends_on_past": False,
     "email_on_failure": False,
     "email_on_retry": False,
-    "retries": 2,
-    "retry_delay": timedelta(minutes=5),
+    "retries": 3,
+    "retry_delay": timedelta(minutes=2),
+    "retry_exponential_backoff": True,
+    "max_retry_delay": timedelta(minutes=30),
     "execution_timeout": timedelta(hours=1),
     "on_failure_callback": on_failure_callback,
+    "on_retry_callback": on_retry_callback,
+    "sla": timedelta(hours=2),
 }
 
 dag = DAG(
@@ -84,6 +125,8 @@ dag = DAG(
     catchup=False,
     tags=["ecommerce", "event", "pipeline", "dataops"],
     max_active_runs=1,
+    dagrun_timeout=timedelta(hours=3),
+    sla_miss_callback=on_sla_miss_callback,
     template_searchpath=[os.path.join(PROJECT_DIR, "sql")],
 )
 
@@ -313,12 +356,16 @@ def generate_quality_report_task(**context):
 generate_events = PythonOperator(
     task_id="generate_events",
     python_callable=generate_events_task,
+    execution_timeout=timedelta(minutes=30),
+    sla=timedelta(minutes=20),
     dag=dag,
 )
 
 validate_quality = PythonOperator(
     task_id="validate_quality",
     python_callable=validate_quality_task,
+    execution_timeout=timedelta(minutes=15),
+    sla=timedelta(minutes=30),
     dag=dag,
 )
 
@@ -331,12 +378,18 @@ quality_branch = BranchPythonOperator(
 load_to_database = PythonOperator(
     task_id="load_to_database",
     python_callable=load_to_database_task,
+    retries=5,
+    retry_delay=timedelta(minutes=3),
+    execution_timeout=timedelta(minutes=45),
+    sla=timedelta(hours=1),
     dag=dag,
 )
 
 quality_alert = PythonOperator(
     task_id="quality_alert",
     python_callable=quality_alert_task,
+    retries=1,
+    execution_timeout=timedelta(minutes=5),
     dag=dag,
 )
 
@@ -345,6 +398,9 @@ create_user_mart = PostgresOperator(
     task_id="create_user_mart",
     postgres_conn_id="ecommerce_db",
     sql="marts/mart_user_daily.sql",
+    retries=3,
+    execution_timeout=timedelta(minutes=20),
+    sla=timedelta(hours=1, minutes=30),
     dag=dag,
 )
 
@@ -352,6 +408,9 @@ create_funnel_mart = PostgresOperator(
     task_id="create_funnel_mart",
     postgres_conn_id="ecommerce_db",
     sql="marts/mart_funnel_daily.sql",
+    retries=3,
+    execution_timeout=timedelta(minutes=20),
+    sla=timedelta(hours=1, minutes=30),
     dag=dag,
 )
 
@@ -359,6 +418,9 @@ create_product_mart = PostgresOperator(
     task_id="create_product_mart",
     postgres_conn_id="ecommerce_db",
     sql="marts/mart_product_daily.sql",
+    retries=3,
+    execution_timeout=timedelta(minutes=20),
+    sla=timedelta(hours=1, minutes=30),
     dag=dag,
 )
 
@@ -366,6 +428,9 @@ create_order_mart = PostgresOperator(
     task_id="create_order_mart",
     postgres_conn_id="ecommerce_db",
     sql="marts/mart_orders.sql",
+    retries=3,
+    execution_timeout=timedelta(minutes=20),
+    sla=timedelta(hours=1, minutes=30),
     dag=dag,
 )
 
