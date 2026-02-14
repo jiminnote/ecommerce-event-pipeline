@@ -272,3 +272,72 @@ class TestEdgeCases:
         # 토요일이 수요일보다 평균적으로 많아야 함 (가중치 1.3 vs 0.9)
         assert avg_weekend > avg_weekday * 0.9, \
             f"주말 트래픽이 비정상적으로 적음: {avg_weekend:.0f} vs {avg_weekday:.0f}"
+
+
+class TestEdgeCasesAdvanced:
+    """심화 엣지 케이스 검증"""
+
+    def test_single_user(self):
+        """사용자 1명으로도 크래시 없이 동작"""
+        gen = EventGenerator(target_date="2026-01-15", num_users=1)
+        events = gen.generate()
+        # 1명은 확률적으로 0건일 수 있음 → 크래시 없이 리스트 반환이 핵심
+        assert isinstance(events, list)
+        summary = gen.get_summary()
+        assert summary["total_events"] >= 0
+
+    def test_leap_year_date(self):
+        """윤년 2월 29일 날짜 처리"""
+        gen = EventGenerator(target_date="2028-02-29", num_users=10)
+        events = gen.generate()
+        assert len(events) > 0
+        assert all(e["timestamp"].startswith("2028-02-29") for e in events)
+
+    def test_year_boundary_date(self):
+        """연말/연초 경계 날짜 처리"""
+        gen = EventGenerator(target_date="2026-12-31", num_users=10)
+        events = gen.generate()
+        assert len(events) > 0
+        assert all(e["timestamp"].startswith("2026-12-31") for e in events)
+
+    def test_summary_with_no_purchases(self):
+        """구매가 0건인 경우에도 summary 정상 반환"""
+        gen = EventGenerator(target_date="2026-01-15", num_users=1)
+        gen.generate()
+        summary = gen.get_summary()
+        assert summary["total_revenue"] >= 0
+        assert summary["purchase_count"] >= 0
+
+    def test_save_creates_directory(self):
+        """저장 경로가 없을 때 디렉터리 자동 생성"""
+        gen = EventGenerator(target_date="2026-01-15", num_users=5)
+        gen.generate()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            nested_dir = os.path.join(tmpdir, "deep", "nested", "dir")
+            filepath = gen.save_to_json(nested_dir)
+            assert os.path.exists(filepath)
+
+    def test_multiple_generate_calls_are_idempotent(self):
+        """generate()를 여러 번 호출해도 이벤트가 무한 증가하지 않음"""
+        gen = EventGenerator(target_date="2026-01-15", num_users=10)
+        gen.generate()
+        count1 = len(gen.events)
+        gen.generate()
+        count2 = len(gen.events)
+        # 재생성이므로 크기가 비슷해야 함 (정확히 같을 필요는 없음 - 랜덤성)
+        assert abs(count1 - count2) / max(count1, 1) < 0.5
+
+    def test_large_scale_event_id_uniqueness(self):
+        """대규모(1000명)에서도 event_id 유니크"""
+        gen = EventGenerator(target_date="2026-01-15", num_users=1000)
+        gen.generate()
+        ids = [e["event_id"] for e in gen.events]
+        assert len(ids) == len(set(ids)), f"대규모 생성에서 중복 event_id 존재: {len(ids) - len(set(ids))}건"
+
+    def test_all_platforms_present_in_large_set(self):
+        """대규모 생성 시 모든 플랫폼이 존재"""
+        gen = EventGenerator(target_date="2026-01-15", num_users=500)
+        gen.generate()
+        platforms = {e["platform"] for e in gen.events}
+        expected = {"web", "ios", "android"}
+        assert platforms == expected, f"누락 플랫폼: {expected - platforms}"
