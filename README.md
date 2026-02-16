@@ -13,34 +13,7 @@
 
 ## 아키텍처
 
-```
-                        Airflow DAG (일 1회, KST 02:00)
-                        ================================
-
-  [이벤트 생성기]                              ┌─ mart_user_daily
-       │                                       ├─ mart_funnel_daily
-       ▼                                       ├─ mart_product_daily
-    JSONL 파일                                  └─ mart_orders
-       │                                            ▲ (4종 병렬)
-       ▼                                            │
-  [품질 검증 7종] ──── PASS ──→ [PostgreSQL 적재] ──→ [마트 생성] → [리포트] → [Slack 완료 알림]
-       │                                                              ▲
-       └──────────── FAIL ──→ [Slack 실패 알림] ─────────────────────→┘
-                                                         ↓
-                                               [품질 대시보드 HTML]
-```
-
-### 대용량 확장 (PySpark)
-
-```
-  JSONL 이벤트 로그 (대용량)
-       │
-       ▼
-  [SparkBatchProcessor] ──→ 퍼널 전환율 / 시간대 트래픽 / 상품 전환율 / 세션 시퀀스
-       │
-       ▼
-  Parquet + CSV 출력
-```
+![Architecture Diagram](docs/architecture.png)
 
 ## 이벤트 스키마 (JSON Schema 표준)
 
@@ -248,3 +221,9 @@ ecommerce-event-pipeline/
 | 테스트 | pytest, pytest-cov |
 | 인프라 | Docker Compose (멀티 서비스, 헬스체크, 볼륨) |
 | 품질 관리 | 자체 구축 7종 검증 프레임워크 + 품질 로그 DB |
+
+## 실무 연계 포인트
+
+- **이커머스 데이터 팀**: 본 파이프라인의 이벤트 스키마 설계, 품질 검증 7종, 전환 퍼널 마트는 실제 이커머스 서비스의 행동 로그 수집·분석 체계를 그대로 반영하고 있어, GA4 등 상용 도구를 대체하거나 보완하는 사내 파이프라인 구축 시 즉시 활용할 수 있습니다.
+- **데이터 엔지니어링 실무**: Airflow DAG의 품질 분기 처리(BranchPythonOperator), DELETE+INSERT 멱등 적재, Slack 알림 연동 패턴은 프로덕션 환경에서 흔히 요구되는 운영 자동화 설계이며, PySpark 배치 확장 구조를 통해 데이터 볼륨 증가 시의 스케일 아웃 전략도 함께 제시합니다.
+- **채용 포트폴리오**: End-to-End 파이프라인(스키마 설계→수집→검증→적재→마트→모니터링)을 단일 프로젝트로 시연할 수 있어, 데이터 엔지니어·분석 엔지니어 직군 면접에서 기술 역량을 구체적으로 증명하는 데 활용할 수 있습니다.
