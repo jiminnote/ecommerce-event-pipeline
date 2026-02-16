@@ -1,6 +1,8 @@
 # Python
 __pycache__/
 *.py[cod]
+*.pyo
+*.egg
 *.egg-info/
 dist/
 build/
@@ -26,13 +28,20 @@ data/spark_output/
 .DS_Store
 Thumbs.db
 
-# Pytest
+# Pytest / Coverage
 .pytest_cache/
 htmlcov/
 .coverage
+.coverage.*
+coverage.xml
+*.cover
 
 # Airflow
 airflow.db
 airflow.cfg
 webserver_config.py
 logs/
+
+# Misc
+*.log
+*.tmp
