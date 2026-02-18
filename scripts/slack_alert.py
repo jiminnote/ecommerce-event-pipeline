@@ -128,7 +128,7 @@ class SlackAlert:
         failed_checks = failed_checks or []
         blocks = self._build_quality_blocks(execution_date, total_checks, passed, failed_checks)
 
-        payload = {"channel": self.channel, "blocks": blocks}
+        payload = {"blocks": blocks}
         return self._post(payload)
 
     def send_pipeline_success(
@@ -155,7 +155,7 @@ class SlackAlert:
             },
         ]
 
-        payload = {"channel": self.channel, "blocks": blocks}
+        payload = {"blocks": blocks}
         return self._post(payload)
 
     def send_pipeline_failure(
@@ -185,13 +185,12 @@ class SlackAlert:
             },
         ]
 
-        payload = {"channel": self.channel, "blocks": blocks}
+        payload = {"blocks": blocks}
         return self._post(payload)
 
     def send_custom(self, title: str, message: str, color: str = "#439FE0") -> bool:
         """범용 커스텀 알림"""
         payload = {
-            "channel": self.channel,
             "attachments": [
                 {
                     "color": color,

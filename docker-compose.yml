@@ -2,6 +2,8 @@ version: '3.8'
 
 x-airflow-common: &airflow-common
   image: apache/airflow:2.7.3-python3.11
+  env_file:
+    - .env
   environment:
     - AIRFLOW__CORE__EXECUTOR=LocalExecutor
     - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
@@ -11,6 +13,8 @@ x-airflow-common: &airflow-common
     - AIRFLOW__WEBSERVER__EXPOSE_CONFIG=True
     # 이커머스 DB 연결 (Airflow Connection 환경변수 방식)
     - AIRFLOW_CONN_ECOMMERCE_DB=postgresql://airflow:airflow@postgres:5432/ecommerce
+    # Slack 알림 (Incoming Webhook)
+    - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
     # 추가 파이썬 패키지 설치
     - _PIP_ADDITIONAL_REQUIREMENTS=apache-airflow-providers-postgres==5.7.1 psycopg2-binary==2.9.9
   volumes:

@@ -42,6 +42,9 @@ airflow.cfg
 webserver_config.py
 logs/
 
+# Secrets
+.env
+
 # Misc
 *.log
 *.tmp
