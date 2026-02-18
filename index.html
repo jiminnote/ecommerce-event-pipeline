@@ -775,6 +775,138 @@
             opacity: 1;
             transform: translateY(0);
         }
+
+        /* ===== TROUBLESHOOTING ===== */
+        .ts-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            position: relative;
+            padding-left: 32px;
+        }
+        .ts-timeline::before {
+            content: '';
+            position: absolute;
+            left: 11px;
+            top: 8px;
+            bottom: 8px;
+            width: 2px;
+            background: var(--border);
+        }
+        .ts-item {
+            position: relative;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px 32px;
+            margin-bottom: 20px;
+            transition: all 0.2s;
+        }
+        .ts-item:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.06); transform: translateY(-2px); }
+        .ts-item::before {
+            content: '';
+            position: absolute;
+            left: -27px;
+            top: 32px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: 3px solid var(--primary-light);
+        }
+        .ts-item-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .ts-item-num {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: var(--primary-light);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+        .ts-item-header h3 { font-size: 16px; font-weight: 700; flex: 1; }
+        .ts-item-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+        .ts-tag {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+        .ts-tag-sql { background: #eff6ff; color: #2563eb; border-color: #bfdbfe; }
+        .ts-tag-python { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+        .ts-tag-airflow { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
+        .ts-tag-infra { background: #f3e8ff; color: #6b21a8; border-color: #ddd6fe; }
+        .ts-sections {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .ts-section {
+            background: var(--bg);
+            border-radius: 10px;
+            padding: 16px 20px;
+        }
+        .ts-section h4 {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        .ts-section-problem h4 { color: #dc2626; }
+        .ts-section-solution h4 { color: #059669; }
+        .ts-section p, .ts-section ul {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+        .ts-section ul { list-style: none; padding: 0; }
+        .ts-section ul li { padding-left: 16px; position: relative; }
+        .ts-section ul li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 11px;
+        }
+        .ts-section code {
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+        }
+        .ts-decision {
+            margin-top: 12px;
+            background: linear-gradient(135deg, #eff6ff 0%, #ecfdf5 100%);
+            border-radius: 10px;
+            padding: 14px 20px;
+            font-size: 13px;
+            color: var(--text);
+            line-height: 1.7;
+            border-left: 4px solid var(--primary);
+        }
+        .ts-decision strong { color: var(--primary-dark); }
+        @media (max-width: 768px) {
+            .ts-sections { grid-template-columns: 1fr; }
+            .ts-timeline { padding-left: 24px; }
+            .ts-item { padding: 20px; }
+        }
     </style>
 </head>
 <body>
@@ -791,6 +923,7 @@
             <a href="#tech">기술스택</a>
             <a href="#decisions">설계결정</a>
             <a href="#tests">테스트</a>
+            <a href="#troubleshooting">트러블슈팅</a>
             <a href="#practical">실무연결</a>
         </div>
     </div>
@@ -1472,10 +1605,282 @@
 
 <hr class="divider">
 
+<!-- TROUBLESHOOTING -->
+<section class="section" id="troubleshooting">
+    <div class="fade-up">
+        <span class="section-label">08 — Troubleshooting</span>
+        <h2 class="section-title">트러블슈팅 & 의사결정</h2>
+        <p class="section-desc">파이프라인 개발 중 마주친 기술적 문제와 해결 과정, 설계 선택의 근거를 기록합니다.</p>
+    </div>
+
+    <div class="ts-timeline fade-up">
+        <!-- 1. DELETE+INSERT -->
+        <div class="ts-item">
+            <div class="ts-item-header">
+                <div class="ts-item-num">1</div>
+                <h3>마트 적재 — DELETE+INSERT vs UPSERT</h3>
+                <div class="ts-item-tags">
+                    <span class="ts-tag ts-tag-sql">SQL</span>
+                    <span class="ts-tag ts-tag-airflow">멱등성</span>
+                </div>
+            </div>
+            <div class="ts-sections">
+                <div class="ts-section ts-section-problem">
+                    <h4>문제</h4>
+                    <p>마트 테이블에 같은 날짜를 재실행하면 집계 데이터가 중복 적재됨. UPSERT는 복합 PK 설계 필수 + <code>SUM</code>/<code>COUNT</code> 집계를 부분 업데이트하는 것이 논리적으로 불가능.</p>
+                </div>
+                <div class="ts-section ts-section-solution">
+                    <h4>해결</h4>
+                    <ul>
+                        <li><code>DELETE WHERE date = '{{ ds }}'</code> → <code>INSERT</code> 패턴 채택</li>
+                        <li>일별 전체 집계를 재계산하여 정합성 확보</li>
+                        <li>Airflow 재실행·backfill 시에도 동일 결과 보장</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="ts-decision"><strong>의사결정:</strong> 일 수천~수만 건 규모에서 DELETE 비용은 무시 가능. 멱등성과 SQL 단순성을 우선. 향후 파티셔닝 도입 시 <code>TRUNCATE PARTITION</code>으로 전환 가능.</div>
+        </div>
+
+        <!-- 2. JSONB NULL -->
+        <div class="ts-item">
+            <div class="ts-item-header">
+                <div class="ts-item-num">2</div>
+                <h3>JSONB 언네스트 시 NULL 처리</h3>
+                <div class="ts-item-tags">
+                    <span class="ts-tag ts-tag-sql">SQL</span>
+                    <span class="ts-tag ts-tag-sql">JSONB</span>
+                </div>
+            </div>
+            <div class="ts-sections">
+                <div class="ts-section ts-section-problem">
+                    <h4>문제</h4>
+                    <p><code>extra_data</code>가 NULL이거나 <code>products</code> 키가 없으면 <code>jsonb_array_elements()</code>가 에러 발생. 상품 마트·주문 마트 생성 시 쿼리 실패.</p>
+                </div>
+                <div class="ts-section ts-section-solution">
+                    <h4>해결</h4>
+                    <ul>
+                        <li><code>COALESCE(extra_data->'products', '[]'::jsonb)</code>로 NULL → 빈 배열 변환</li>
+                        <li><code>WHERE extra_data IS NOT NULL</code> 필터 추가</li>
+                        <li>숫자 캐스팅 시 <code>COALESCE(..., 0)</code> 기본값 방어</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. 병렬 Lock -->
+        <div class="ts-item">
+            <div class="ts-item-header">
+                <div class="ts-item-num">3</div>
+                <h3>마트 병렬 실행 시 Lock 이슈</h3>
+                <div class="ts-item-tags">
+                    <span class="ts-tag ts-tag-sql">PostgreSQL</span>
+                    <span class="ts-tag ts-tag-airflow">병렬처리</span>
+                </div>
+            </div>
+            <div class="ts-sections">
+                <div class="ts-section ts-section-problem">
+                    <h4>문제</h4>
+                    <p>4개 마트가 동시에 <code>raw_events</code>를 읽고 각자의 마트 테이블에 DELETE+INSERT 수행. 잠재적 lock 경합 우려.</p>
+                </div>
+                <div class="ts-section ts-section-solution">
+                    <h4>해결</h4>
+                    <ul>
+                        <li>4개 마트가 서로 다른 테이블에 쓰기 → lock 충돌 없음</li>
+                        <li>PostgreSQL MVCC: SELECT(읽기)와 DELETE/INSERT 비충돌</li>
+                        <li>1000만 건 이상 시 Spark 배치 전환 전략 수립</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Division by Zero -->
+        <div class="ts-item">
+            <div class="ts-item-header">
+                <div class="ts-item-num">4</div>
+                <h3>전환율 계산 시 Division by Zero</h3>
+                <div class="ts-item-tags">
+                    <span class="ts-tag ts-tag-sql">SQL</span>
+                </div>
+            </div>
+            <div class="ts-sections">
+                <div class="ts-section ts-section-problem">
+                    <h4>문제</h4>
+                    <p>특정 날짜에 <code>page_view</code>가 0건이면 퍼널 전환율 계산 시 <code>0/0</code> → division by zero 에러 발생.</p>
+                </div>
+                <div class="ts-section ts-section-solution">
+                    <h4>해결</h4>
+                    <ul>
+                        <li><code>NULLIF(count, 0)</code>로 분모 0 → NULL 변환</li>
+                        <li>NULL 나누기는 NULL 반환 (에러 아님)</li>
+                        <li>대시보드에서 <code>COALESCE(rate, 0)</code> 또는 "N/A" 표시</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Batch Insert -->
+        <div class="ts-item">
+            <div class="ts-item-header">
+                <div class="ts-item-num">5</div>
+                <h3>Batch Insert 메모리 관리</h3>
+                <div class="ts-item-tags">
+                    <span class="ts-tag ts-tag-python">Python</span>
+                    <span class="ts-tag ts-tag-sql">PostgreSQL</span>
+                </div>
+            </div>
+            <div class="ts-sections">
+                <div class="ts-section ts-section-problem">
+                    <h4>문제</h4>
+                    <p>이벤트 전체를 한 번에 메모리에 올리고 INSERT하면 수십만 건 초과 시 OOM 위험. 단건 INSERT는 N회 roundtrip으로 극도로 느림.</p>
+                </div>
+                <div class="ts-section ts-section-solution">
+                    <h4>해결</h4>
+                    <ul>
+                        <li><code>executemany</code> + 1000건 단위 배치</li>
+                        <li><code>ON CONFLICT DO NOTHING</code>으로 중복 방지 호환</li>
+                        <li>향후 <code>execute_values</code>(5~10배 빠름) 또는 <code>COPY</code> 전환 가능</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. 품질 임계값 -->
+        <div class="ts-item">
+            <div class="ts-item-header">
+                <div class="ts-item-num">6</div>
+                <h3>품질 검증 임계값 99% 선택 근거</h3>
+                <div class="ts-item-tags">
+                    <span class="ts-tag ts-tag-python">Python</span>
+                    <span class="ts-tag ts-tag-airflow">DataOps</span>
+                </div>
+            </div>
+            <div class="ts-sections">
+                <div class="ts-section ts-section-problem">
+                    <h4>문제</h4>
+                    <p>100%는 1건의 노이즈에도 파이프라인 중단 → false alarm 빈발. 95%는 심각한 품질 문제를 놓칠 가능성.</p>
+                </div>
+                <div class="ts-section ts-section-solution">
+                    <h4>해결</h4>
+                    <ul>
+                        <li>99% 채택: 일 2만 건 기준 200건까지 노이즈 허용</li>
+                        <li>1% 이상 실패 = 시스템적 문제(스키마 변경, 버그)</li>
+                        <li>향후 검증 항목별 차등 임계값 적용 고려</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7. Retry 백오프 -->
+        <div class="ts-item">
+            <div class="ts-item-header">
+                <div class="ts-item-num">7</div>
+                <h3>DAG Retry 지수 백오프 설정</h3>
+                <div class="ts-item-tags">
+                    <span class="ts-tag ts-tag-airflow">Airflow</span>
+                </div>
+            </div>
+            <div class="ts-sections">
+                <div class="ts-section ts-section-problem">
+                    <h4>문제</h4>
+                    <p>즉시 재시도 시 일시적 장애(DB 연결 끊김, 리소스 부족)가 해소되지 않은 상태에서 반복 실패.</p>
+                </div>
+                <div class="ts-section ts-section-solution">
+                    <h4>해결</h4>
+                    <ul>
+                        <li>지수 백오프: 2분 → 4분 → 8분 (최대 30분)</li>
+                        <li>DB 적재 5회, 마트 3회, 알림 1회 차등 재시도</li>
+                        <li>최종 실패 시 <code>on_failure_callback</code>으로 Slack 알림</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8. 타임존 -->
+        <div class="ts-item">
+            <div class="ts-item-header">
+                <div class="ts-item-num">8</div>
+                <h3>타임존 처리 — KST vs UTC</h3>
+                <div class="ts-item-tags">
+                    <span class="ts-tag ts-tag-airflow">Airflow</span>
+                    <span class="ts-tag ts-tag-infra">인프라</span>
+                </div>
+            </div>
+            <div class="ts-sections">
+                <div class="ts-section ts-section-problem">
+                    <h4>문제</h4>
+                    <p>Airflow는 UTC, 비즈니스 데이터는 KST 기준. <code>schedule_interval</code>과 <code>{{ ds }}</code>의 시간대 혼동.</p>
+                </div>
+                <div class="ts-section ts-section-solution">
+                    <h4>해결</h4>
+                    <ul>
+                        <li>스케줄 <code>0 17 * * *</code> (UTC 17시 = KST 02시)</li>
+                        <li><code>{{ ds }}</code>를 데이터 필터 조건에 그대로 사용</li>
+                        <li>모든 시간을 KST 기준으로 통일 저장</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 9. XCom -->
+        <div class="ts-item">
+            <div class="ts-item-header">
+                <div class="ts-item-num">9</div>
+                <h3>XCom Task 간 데이터 전달 한계</h3>
+                <div class="ts-item-tags">
+                    <span class="ts-tag ts-tag-airflow">Airflow</span>
+                    <span class="ts-tag ts-tag-python">Python</span>
+                </div>
+            </div>
+            <div class="ts-sections">
+                <div class="ts-section ts-section-problem">
+                    <h4>문제</h4>
+                    <p>XCom은 메타데이터 DB에 직렬화 저장 → 대용량 데이터(이벤트 리스트, DataFrame) 전달 시 DB 부하 및 성능 저하.</p>
+                </div>
+                <div class="ts-section ts-section-solution">
+                    <h4>해결</h4>
+                    <ul>
+                        <li>XCom에는 파일 경로·요약(수 KB)만 전달</li>
+                        <li>실제 데이터는 파일시스템/DB로 분리</li>
+                        <li>향후 S3/GCS XCom Backend 전환 가능</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 10. BranchPythonOperator -->
+        <div class="ts-item">
+            <div class="ts-item-header">
+                <div class="ts-item-num">10</div>
+                <h3>BranchPythonOperator 이후 trigger_rule</h3>
+                <div class="ts-item-tags">
+                    <span class="ts-tag ts-tag-airflow">Airflow</span>
+                </div>
+            </div>
+            <div class="ts-sections">
+                <div class="ts-section ts-section-problem">
+                    <h4>문제</h4>
+                    <p>분기 후 선택되지 않은 경로가 <code>skipped</code> 처리됨. 기본 <code>all_success</code> 규칙으로는 공통 종료 Task도 skip됨.</p>
+                </div>
+                <div class="ts-section ts-section-solution">
+                    <h4>해결</h4>
+                    <ul>
+                        <li><code>NONE_FAILED_MIN_ONE_SUCCESS</code> 트리거 룰 적용</li>
+                        <li>PASS/FAIL 어느 경로든 품질 로그·리포트 실행 보장</li>
+                        <li>마트 실패 시에는 의도적으로 실행하지 않음 (불완전 데이터 방지)</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="ts-decision"><strong>핵심 판단:</strong> <code>one_success</code>가 아닌 <code>none_failed_min_one_success</code>를 선택한 이유는, upstream에서 실패가 있으면 불완전한 데이터로 로그를 남기지 않기 위함.</div>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
 <!-- PRACTICAL -->
 <section class="section" id="practical">
     <div class="fade-up">
-        <span class="section-label">08 — Practical Connection</span>
+        <span class="section-label">09 — Practical Connection</span>
         <h2 class="section-title">실무 연결 포인트</h2>
         <p class="section-desc">이 프로젝트의 구현 경험이 실무에서 어떻게 연결되는지를 정리했습니다.</p>
     </div>
