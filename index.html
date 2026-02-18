@@ -920,6 +920,7 @@
             <a href="#architecture">아키텍처</a>
             <a href="#match">담당업무</a>
             <a href="#quality">품질검증</a>
+            <a href="#slack-monitoring">Slack</a>
             <a href="#tech">기술스택</a>
             <a href="#decisions">설계결정</a>
             <a href="#tests">테스트</a>
@@ -1386,10 +1387,63 @@
 
 <hr class="divider">
 
+<!-- SLACK MONITORING -->
+<section class="section" id="slack-monitoring">
+    <div class="fade-up">
+        <span class="section-label">05 — Slack Monitoring</span>
+        <h2 class="section-title">실시간 Slack 모니터링</h2>
+        <p class="section-desc">파이프라인 실행 결과가 Slack Incoming Webhook으로 자동 발송됩니다. 품질 검증 PASS/FAIL, 파이프라인 성공/실패 4가지 시나리오를 모두 커버합니다.</p>
+    </div>
+
+    <div class="fade-up" style="margin-top:24px;">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px; margin-bottom:32px;">
+            <div style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; border-left:4px solid #10b981;">
+                <h4 style="font-size:14px; font-weight:700; color:#059669; margin-bottom:6px;">✅ 품질 검증 PASS</h4>
+                <p style="font-size:12px; color:var(--text-secondary); line-height:1.6;">7가지 검증 항목 모두 통과 시 발송.<br>검증 결과 요약과 날짜 포함.</p>
+            </div>
+            <div style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; border-left:4px solid #3b82f6;">
+                <h4 style="font-size:14px; font-weight:700; color:#2563eb; margin-bottom:6px;">🎉 파이프라인 성공</h4>
+                <p style="font-size:12px; color:var(--text-secondary); line-height:1.6;">전체 파이프라인 완료 시 이벤트 수,<br>사용자 수, 품질 결과 요약 발송.</p>
+            </div>
+            <div style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; border-left:4px solid #ef4444;">
+                <h4 style="font-size:14px; font-weight:700; color:#dc2626; margin-bottom:6px;">🚨 파이프라인 실패</h4>
+                <p style="font-size:12px; color:var(--text-secondary); line-height:1.6;">Task 실패 시 DAG/Task명, 에러 메시지를<br>즉시 알림. on_failure_callback 트리거.</p>
+            </div>
+            <div style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; border-left:4px solid #f59e0b;">
+                <h4 style="font-size:14px; font-weight:700; color:#d97706; margin-bottom:6px;">❌ 품질 검증 FAIL</h4>
+                <p style="font-size:12px; color:var(--text-secondary); line-height:1.6;">임계값 미달 시 실패 항목별 통과율과<br>상세 내용 포함하여 발송.</p>
+            </div>
+        </div>
+
+        <div style="background:var(--card); border:1px solid var(--border); border-radius:16px; overflow:hidden;">
+            <div style="background:var(--bg); padding:16px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px;">
+                <span style="font-size:20px;">💬</span>
+                <span style="font-size:14px; font-weight:700;">실제 Slack 알림 수신 화면</span>
+                <span style="font-size:12px; color:var(--text-secondary); margin-left:auto;">Incoming Webhook · 2026-02-18</span>
+            </div>
+            <div style="padding:24px; text-align:center; background:#1a1d21;">
+                <img src="assets/slack_alert_screenshot.png"
+                     alt="Slack 알림 캡처 - 품질검증 PASS/FAIL, 파이프라인 성공/실패 4종 알림"
+                     style="max-width:100%; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.3);"
+                     loading="lazy">
+            </div>
+            <div style="padding:16px 24px; background:var(--bg); border-top:1px solid var(--border);">
+                <p style="font-size:13px; color:var(--text-secondary); line-height:1.7; margin:0;">
+                    <strong style="color:var(--text);">Slack Incoming Webhook</strong> 방식으로 연동.
+                    <code style="background:var(--primary-light); color:var(--primary-dark); padding:1px 6px; border-radius:4px; font-size:12px;">SLACK_WEBHOOK_URL</code> 환경변수만 설정하면 즉시 활성화되며,
+                    미설정 시 로그 출력으로 폴백되어 파이프라인 동작에 영향 없음.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
 <!-- TECH STACK -->
 <section class="section" id="tech">
     <div class="fade-up">
-        <span class="section-label">05 — Tech Stack</span>
+        <span class="section-label">06 — Tech Stack</span>
         <h2 class="section-title">기술 스택</h2>
         <p class="section-desc">검증된 오픈소스 기술 조합으로 실무 환경에 가까운 파이프라인을 구성했습니다.</p>
     </div>
@@ -1459,7 +1513,7 @@
 <!-- DECISIONS -->
 <section class="section" id="decisions">
     <div class="fade-up">
-        <span class="section-label">06 — Design Decisions</span>
+        <span class="section-label">07 — Design Decisions</span>
         <h2 class="section-title">주요 설계 결정</h2>
         <p class="section-desc">"왜 이렇게 만들었는가"에 대한 기술적 의사결정 기록입니다.</p>
     </div>
@@ -1543,7 +1597,7 @@
 <!-- TESTS -->
 <section class="section" id="tests">
     <div class="fade-up">
-        <span class="section-label">07 — Testing</span>
+        <span class="section-label">08 — Testing</span>
         <h2 class="section-title">테스트 & 품질</h2>
         <p class="section-desc">pytest 기반 30+ 테스트 케이스로 이벤트 생성기, 품질 검증기, 알림 모듈을 커버합니다.</p>
     </div>
@@ -1608,7 +1662,7 @@
 <!-- TROUBLESHOOTING -->
 <section class="section" id="troubleshooting">
     <div class="fade-up">
-        <span class="section-label">08 — Troubleshooting</span>
+        <span class="section-label">09 — Troubleshooting</span>
         <h2 class="section-title">트러블슈팅 & 의사결정</h2>
         <p class="section-desc">파이프라인 개발 중 마주친 기술적 문제와 해결 과정, 설계 선택의 근거를 기록합니다.</p>
     </div>
@@ -1880,7 +1934,7 @@
 <!-- PRACTICAL -->
 <section class="section" id="practical">
     <div class="fade-up">
-        <span class="section-label">09 — Practical Connection</span>
+        <span class="section-label">10 — Practical Connection</span>
         <h2 class="section-title">실무 연결 포인트</h2>
         <p class="section-desc">이 프로젝트의 구현 경험이 실무에서 어떻게 연결되는지를 정리했습니다.</p>
     </div>
