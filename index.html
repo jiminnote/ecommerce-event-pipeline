@@ -982,7 +982,7 @@
             <h3>어떤 문제를 해결하는가</h3>
             <p><strong>① 데이터 무결성:</strong> 7가지 자동 품질 검증으로 불량 데이터 적재 원천 차단<br>
             <strong>② 운영 효율:</strong> Airflow DAG 기반 일 배치 자동화<br>
-            <strong>③ 분석 기반:</strong> 사용자/퍼널/상품/주문 4종 마트로 비즈니스 인사이트 즉시 도출<br>
+            <strong>③ 분석 기반:</strong> 사용자/퍼널/상품/주문 4종 마트로 ROAS·전환율·AOV·LTV·재고회전율 등 핵심 비즈니스 지표 산출 기반 제공<br>
             <strong>④ AI 리포팅:</strong> LLM 기반 일간 매출 자동 분석으로 의사결정 지원</p>
         </div>
         <div class="bg-card">
@@ -1164,14 +1164,14 @@
                 <div class="match-card-num" style="background:#fef3c7; color:#d97706;">2</div>
                 <div>
                     <h3>DW / DM 설계 · 구축</h3>
-                    <div class="subtitle">Raw Layer → Mart Layer 2계층 설계, 4종 분석 마트</div>
+                    <div class="subtitle">Raw Layer → Mart Layer 2계층 설계, ROAS·전환율·AOV·LTV 산출을 위한 4종 분석 마트</div>
                 </div>
             </div>
             <div class="match-card-body">
                 <div class="dm-cards">
                     <div class="dm-card" style="border-color:#3b82f6;">
                         <h4>👤 사용자 일별 마트</h4>
-                        <p>사용자별 일 단위 행동 요약. 세션 수, 이벤트 유형별 카운트, 구매 금액, 체류 시간.</p>
+                        <p>사용자별 일 단위 행동 요약. 세션 수, 이벤트 유형별 카운트, 구매 금액, 체류 시간을 집계하여 코호트 분석 및 리텐션(재방문율) 측정 기반 제공.</p>
                         <div class="dm-columns">
                             <span class="dm-col">session_count</span>
                             <span class="dm-col">page_view_count</span>
@@ -1182,7 +1182,7 @@
                     </div>
                     <div class="dm-card" style="border-color:#10b981;">
                         <h4>🔄 전환 퍼널 마트</h4>
-                        <p>플랫폼별 일간 전환 퍼널. 조회→클릭→장바구니→구매 4단계 전환율 자동 계산.</p>
+                        <p>조회→클릭→장바구니→구매 4단계 전환율을 플랫폼별로 자동 계산하여 ROAS 산출 및 마케팅 성과 분석의 기반 데이터를 제공. 단계별 이탈률(Drop-off Rate)로 퍼널 병목 구간을 식별하고 CPA 최적화에 활용.</p>
                         <div class="dm-columns">
                             <span class="dm-col">step1_viewers</span>
                             <span class="dm-col">step2_clickers</span>
@@ -1193,7 +1193,7 @@
                     </div>
                     <div class="dm-card" style="border-color:#f59e0b;">
                         <h4>📦 상품 일별 마트</h4>
-                        <p>상품별 일간 행동 집계. 클릭·장바구니·구매·매출·전환율 한 테이블에 통합.</p>
+                        <p>상품별 일간 행동 집계. 클릭·장바구니·구매·매출·전환율을 한 테이블에 통합하여 재고회전율 산출 및 상품별 수익성(Margin) 분석 기반 제공.</p>
                         <div class="dm-columns">
                             <span class="dm-col">click_count</span>
                             <span class="dm-col">cart_add_count</span>
@@ -1204,7 +1204,7 @@
                     </div>
                     <div class="dm-card" style="border-color:#8b5cf6;">
                         <h4>🛒 주문 마트</h4>
-                        <p>주문 단위 디테일 테이블. JSONB에서 할인·배송비·쿠폰 파싱하여 정규화.</p>
+                        <p>주문 단위 디테일 테이블. JSONB에서 할인·배송비·쿠폰 파싱하여 정규화. AOV(객단가), 쿠폰 사용률, 결제수단 분포 분석으로 LTV 산출 기반 제공.</p>
                         <div class="dm-columns">
                             <span class="dm-col">total_amount</span>
                             <span class="dm-col">payment_method</span>
@@ -1272,7 +1272,7 @@
                     </div>
                     <div class="match-detail-item">
                         <h4> 자동 분석 항목</h4>
-                        <p>핵심 KPI 요약, 플랫폼별 전환율 비교, 매출 TOP 상품 하이라이트, 결제수단 분포, 데이터 기반 액션 아이템 1~3가지 제안.</p>
+                        <p>핵심 KPI(매출·ROAS·전환율·AOV) 요약, 플랫폼별 전환율·CPA 비교, 매출 TOP 상품 하이라이트, 결제수단 분포, 데이터 기반 액션 아이템 1~3가지 제안.</p>
                     </div>
                     <div class="match-detail-item">
                         <h4> 파이프라인 통합</h4>
