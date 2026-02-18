@@ -996,29 +996,29 @@
             <div class="match-card-body">
                 <div class="match-detail-grid">
                     <div class="match-detail-item">
-                        <h4>📐 DAG 구조</h4>
+                        <h4> DAG 구조</h4>
                         <p>11개 Task로 구성된 단일 DAG.<br>
                         <code>PythonOperator</code> 7개 + <code>PostgresOperator</code> 4개로 역할 분리.</p>
                     </div>
                     <div class="match-detail-item">
-                        <h4>🔗 Task 의존성</h4>
+                        <h4> Task 의존성</h4>
                         <p>선형 → 분기 → 병렬 → 합류 패턴.<br>
                         마트 4종이 <code>load_to_database</code> 이후 <strong>동시 병렬 실행</strong>되어 처리 시간 단축.</p>
                     </div>
                     <div class="match-detail-item">
-                        <h4>⑂ 분기 처리</h4>
+                        <h4> 분기 처리</h4>
                         <p><code>BranchPythonOperator</code>로 품질 PASS/FAIL에 따라 적재 또는 알림 경로를 동적 선택.</p>
                     </div>
                     <div class="match-detail-item">
-                        <h4>♻️ 멱등성 보장</h4>
+                        <h4> 멱등성 보장</h4>
                         <p>모든 마트 SQL이 <code>DELETE WHERE date='{{ ds }}'</code> → <code>INSERT</code> 패턴. 재실행 시 중복 없이 동일 결과.</p>
                     </div>
                     <div class="match-detail-item">
-                        <h4>🔔 모니터링</h4>
+                        <h4> 모니터링</h4>
                         <p><code>on_failure_callback</code>으로 Task 실패 시 Slack 즉시 알림. <code>TriggerRule.NONE_FAILED_MIN_ONE_SUCCESS</code>로 공통 종료 Task 보장.</p>
                     </div>
                     <div class="match-detail-item">
-                        <h4>⚙️ 운영 설정</h4>
+                        <h4> 운영 설정</h4>
                         <p>재시도 2회, 5분 간격. 실행 타임아웃 1시간. <code>max_active_runs=1</code>로 동시 실행 방지. <code>catchup=False</code>로 백필 차단.</p>
                     </div>
                 </div>
@@ -1099,7 +1099,7 @@
                     플랫폼-디바이스 정합성 규칙과 전환 퍼널 순서 규칙도 스키마에 명시합니다.
                 </p>
                 <div class="schema-tags">
-                    <div class="schema-tag">👁️ page_view<span style="color:var(--text-secondary); font-weight:400; font-size:12px;">&nbsp;— page_url, page_type, referrer</span></div>
+                    <div class="schema-tag">💻 page_view<span style="color:var(--text-secondary); font-weight:400; font-size:12px;">&nbsp;— page_url, page_type, referrer</span></div>
                     <div class="schema-tag">👆 click<span style="color:var(--text-secondary); font-weight:400; font-size:12px;">&nbsp;— element_id, element_type, position</span></div>
                     <div class="schema-tag">🛒 add_to_cart<span style="color:var(--text-secondary); font-weight:400; font-size:12px;">&nbsp;— product_id, quantity, unit_price</span></div>
                     <div class="schema-tag">💳 purchase<span style="color:var(--text-secondary); font-weight:400; font-size:12px;">&nbsp;— order_id, total_amount, payment_method</span></div>
@@ -1107,11 +1107,11 @@
                 </div>
                 <div class="match-detail-grid" style="margin-top:16px;">
                     <div class="match-detail-item">
-                        <h4>🏷️ 공통 필드</h4>
+                        <h4> 공통 필드</h4>
                         <p><code>event_id</code> (UUID v4), <code>user_id</code> (U000001 패턴), <code>session_id</code>, <code>timestamp</code> (ISO 8601), <code>platform</code>, <code>device_type</code></p>
                     </div>
                     <div class="match-detail-item">
-                        <h4>📏 정합성 규칙</h4>
+                        <h4> 정합성 규칙</h4>
                         <p>iOS/Android → mobile 고정. Web → desktop/mobile/tablet. 동일 세션 내 플랫폼 변경 불가. 전환 퍼널 순서 보장.</p>
                     </div>
                 </div>
@@ -1130,27 +1130,27 @@
             <div class="match-card-body">
                 <div class="match-detail-grid">
                     <div class="match-detail-item">
-                        <h4>🤖 Multi-LLM 지원</h4>
+                        <h4> Multi-LLM 지원</h4>
                         <p>OpenAI GPT-4o / Claude 3.5 Sonnet 중 선택 가능. <code>LLM_PROVIDER</code> 환경변수로 전환. API 키 미설정 시 폴백 리포트 자동 생성.</p>
                     </div>
                     <div class="match-detail-item">
-                        <h4>📝 프롬프트 엔지니어링</h4>
+                        <h4> 프롬프트 엔지니어링</h4>
                         <p>마트 4종 데이터를 구조화된 프롬프트로 변환. 시스템 프롬프트에 비즈니스 분석 규칙(매출, 전환율, 액션 아이템 등)을 정의.</p>
                     </div>
                     <div class="match-detail-item">
-                        <h4>📊 자동 분석 항목</h4>
+                        <h4> 자동 분석 항목</h4>
                         <p>핵심 KPI 요약, 플랫폼별 전환율 비교, 매출 TOP 상품 하이라이트, 결제수단 분포, 데이터 기반 액션 아이템 1~3가지 제안.</p>
                     </div>
                     <div class="match-detail-item">
-                        <h4>🔗 파이프라인 통합</h4>
+                        <h4> 파이프라인 통합</h4>
                         <p>Airflow DAG의 <code>quality_report</code> 이후 <code>llm_daily_report</code> Task로 실행. 마트 생성 완료 후 자동 트리거.</p>
                     </div>
                     <div class="match-detail-item">
-                        <h4>📨 Slack 발송</h4>
+                        <h4> Slack 발송</h4>
                         <p>Block Kit 기반 리치 포맷으로 일간 AI 리포트 자동 발송. 리포트 하단에 모델 정보, 생성 시각 포함.</p>
                     </div>
                     <div class="match-detail-item">
-                        <h4>💾 이중 저장</h4>
+                        <h4> 이중 저장</h4>
                         <p>생성된 리포트를 JSON 파일로 로컬 저장 + Slack 발송. DB 추출 실패 시 로컬 리포트 파일로 폴백 추출.</p>
                     </div>
                 </div>
@@ -1436,35 +1436,35 @@
 
     <div class="test-categories fade-up">
         <div class="test-cat-item">
-            <span class="test-cat-name">📐 이벤트 구조 유효성 (필수 필드, 유형, 고유성, 정렬)</span>
+            <span class="test-cat-name"> 이벤트 구조 유효성 (필수 필드, 유형, 고유성, 정렬)</span>
             <span class="test-cat-count">7개</span>
         </div>
         <div class="test-cat-item">
-            <span class="test-cat-name">📱 플랫폼-디바이스 정합성 (iOS/Android/Web 규칙)</span>
+            <span class="test-cat-name"> 플랫폼-디바이스 정합성 (iOS/Android/Web 규칙)</span>
             <span class="test-cat-count">6개</span>
         </div>
         <div class="test-cat-item">
-            <span class="test-cat-name">🔄 전환 퍼널 로직 (purchase→cart→view 순서)</span>
+            <span class="test-cat-name"> 전환 퍼널 로직 (purchase→cart→view 순서)</span>
             <span class="test-cat-count">5개</span>
         </div>
         <div class="test-cat-item">
-            <span class="test-cat-name">🧮 품질 검증기 단위 테스트 (NULL/중복/범위/순서/정합성)</span>
+            <span class="test-cat-name"> 품질 검증기 단위 테스트 (NULL/중복/범위/순서/정합성)</span>
             <span class="test-cat-count">7개</span>
         </div>
         <div class="test-cat-item">
-            <span class="test-cat-name">🔗 통합 테스트 (전체 검증 → 리포트 구조 → JSONL 파일)</span>
+            <span class="test-cat-name"> 통합 테스트 (전체 검증 → 리포트 구조 → JSONL 파일)</span>
             <span class="test-cat-count">4개</span>
         </div>
         <div class="test-cat-item">
-            <span class="test-cat-name">📨 Slack 알림 테스트 (초기화/URL 미설정/페이로드)</span>
+            <span class="test-cat-name"> Slack 알림 테스트 (초기화/URL 미설정/페이로드)</span>
             <span class="test-cat-count">6개</span>
         </div>
         <div class="test-cat-item">
-            <span class="test-cat-name">🌐 엣지 케이스 (소규모/대규모/날짜/주말 트래픽)</span>
+            <span class="test-cat-name"> 엣지 케이스 (소규모/대규모/날짜/주말 트래픽)</span>
             <span class="test-cat-count">4개</span>
         </div>
         <div class="test-cat-item">
-            <span class="test-cat-name">🤖 LLM 리포트 (클라이언트/데이터 추출/프롬프트/통합)</span>
+            <span class="test-cat-name"> LLM 리포트 (클라이언트/데이터 추출/프롬프트/통합)</span>
             <span class="test-cat-count">18개</span>
         </div>
     </div>
@@ -1482,7 +1482,7 @@
 
     <div class="practical-grid fade-up">
         <div class="practical-col">
-            <h3>🏗️ 이 프로젝트에서 구현한 것</h3>
+            <h3> 이 프로젝트에서 구현한 것</h3>
             <ul class="practical-list">
                 <li>Airflow DAG 10개 Task 설계·구현으로 ETL 전 과정 자동화</li>
                 <li>7가지 데이터 품질 검증 체계 설계 및 자동화</li>
@@ -1498,7 +1498,7 @@
             <div class="practical-plus">+</div>
         </div>
         <div class="practical-col">
-            <h3>💼 실무에서 적용했던 경험</h3>
+            <h3> 실무에서 적용했던 경험</h3>
             <ul class="practical-list">
                 <li>금융권 대규모 데이터 ETL 파이프라인 운영 경험</li>
                 <li>데이터 정합성 이슈 트러블슈팅 및 재발 방지 체계 구축</li>
@@ -1508,11 +1508,6 @@
                 <li>온프레미스/클라우드 환경 인프라 운영</li>
             </ul>
         </div>
-    </div>
-    <div class="practical-result fade-up">
-        <h3>💎 = 채용 공고 담당업무 매칭</h3>
-        <p>금융권 ETL 운영 경험과 체계적인 데이터 파이프라인 설계 역량을 바탕으로,<br>
-        <strong>데이터 인프라 고도화와 안정적인 DW/DM 운영</strong>에 즉시 기여할 수 있습니다.</p>
     </div>
 </section>
 
