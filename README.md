@@ -1,6 +1,6 @@
 # 이커머스 행동 로그 파이프라인
 
-이커머스 사용자 행동 이벤트를 **정의→생성→수집→검증→적재→마트 생성→모니터링**까지 End-to-End로 처리하는 데이터 파이프라인입니다.
+이커머스 사용자 행동 이벤트를 **정의→생성→수집→검증→적재→마트 생성→AI 리포팅→모니터링**까지 End-to-End로 처리하는 데이터 파이프라인입니다.
 [https://jiminnote.github.io/ecommerce-event-pipeline/](https://jiminnote.github.io/ecommerce-event-pipeline/)
 ## 프로젝트 목적
 
@@ -10,6 +10,7 @@
 - 전환 퍼널 분석용 **데이터 마트 4종** 설계
 - **Slack Webhook 기반 실시간 알림** + 품질 대시보드 모니터링
 - **PySpark 배치 프로세서**를 통한 대용량 처리 확장 설계
+- **LLM API(OpenAI/Claude) 기반 일간 매출 자동 요약 리포트** 생성 파이프라인
 
 ## 아키텍처
 
@@ -113,6 +114,49 @@ spark-submit scripts/spark_batch_processor.py \
 
 > 마트 적재는 `DELETE WHERE date = '{{ ds }}' → INSERT` 패턴으로 **멱등성(idempotency)**을 보장합니다. 재실행 시 중복 없이 동일 결과를 보장합니다.
 
+## LLM 기반 AI 일간 매출 리포트
+
+마트 4종 집계 데이터를 LLM API로 분석하여 **자연어 비즈니스 리포트를 자동 생성**하고 Slack으로 발송합니다.
+Airflow DAG의 마지막 Task(`llm_daily_report`)로 통합되어 기존 ETL 파이프라인과 연속 운영됩니다.
+
+### 지원 LLM
+
+| Provider | 모델 | 환경변수 |
+|----------|------|----------|
+| OpenAI | GPT-4o-mini (기본) / GPT-4o | `OPENAI_API_KEY` |
+| Anthropic | Claude 3.5 Sonnet | `ANTHROPIC_API_KEY` |
+
+### 리포트 생성 흐름
+
+```
+마트 4종 DB 조회 → 데이터 포맷팅 → 프롬프트 엔지니어링 → LLM API 호출 → 리포트 생성 → Slack 발송 + 파일 저장
+```
+
+### 자동 분석 항목
+
+- 핵심 KPI 요약 (매출, 주문수, 전환율)
+- 플랫폼별(Web/iOS/Android) 전환 퍼널 비교 분석
+- 매출 상위 상품 및 전환율 우수 상품 하이라이트
+- 결제수단 분포 분석
+- 데이터 기반 액션 아이템 1~3가지 제안
+
+### 설정
+
+```bash
+# LLM 프로바이더 선택 (기본: openai)
+export LLM_PROVIDER="openai"  # 또는 "anthropic"
+
+# API 키 설정
+export OPENAI_API_KEY="sk-..."
+# 또는
+export ANTHROPIC_API_KEY="sk-ant-..."
+
+# 모델 오버라이드 (선택)
+export LLM_MODEL="gpt-4o"
+```
+
+> API 키 미설정 시 폴백 모드로 동작하여 원본 데이터 요약을 생성합니다. 로컬 개발 환경에서도 파이프라인이 정상 동작합니다.
+
 ## 테스트
 
 ```bash
@@ -123,9 +167,10 @@ make test
 make test-cov
 ```
 
-**테스트 구성 (30+ 케이스)**:
+**테스트 구성 (50+ 케이스)**:
 - `test_generate_events.py`: 이벤트 구조, 플랫폼-디바이스 정합성, 전환 퍼널 순서, 시간대 분포, 상품 카탈로그 일치, 주말 트래픽 패턴
 - `test_validate_quality.py`: 7가지 검증 항목별 정상/비정상 케이스, 통합 검증, JSONL 파일 기반 검증
+- `test_llm_daily_report.py`: LLMClient 초기화/폴백, MartDataExtractor DB/파일 추출, 프롬프트 빌드, 리포트 생성/저장/발송 통합 테스트
 
 ## 주요 설계 결정
 
@@ -180,13 +225,14 @@ export SLACK_WEBHOOK_URL="https://hooks.slack.com/services/T.../B.../xxx"
 ```
 ecommerce-event-pipeline/
 ├── dags/
-│   └── event_pipeline_dag.py       # Airflow DAG (10개 Task, 품질 분기, 4종 마트 병렬, Slack 연동)
+│   └── event_pipeline_dag.py       # Airflow DAG (11개 Task, 품질 분기, 4종 마트 병렬, LLM 리포트, Slack 연동)
 ├── scripts/
 │   ├── generate_events.py          # 이벤트 로그 생성기 (퍼널 시뮬레이션, 사용자 프로파일)
 │   ├── validate_quality.py         # 데이터 품질 검증 모듈 (7가지 검증)
 │   ├── spark_batch_processor.py    # PySpark 대용량 배치 프로세서 (4종 집계)
 │   ├── slack_alert.py              # Slack Incoming Webhook 알림 모듈
-│   └── quality_dashboard.py        # 품질 대시보드 (터미널 + HTML)
+│   ├── quality_dashboard.py        # 품질 대시보드 (터미널 + HTML)
+│   └── llm_daily_report.py         # LLM 기반 일간 매출 자동 요약 리포트 (OpenAI/Claude)
 ├── schemas/
 │   └── event_schema.json           # 이벤트 스키마 (JSON Schema Draft-07)
 ├── sql/
@@ -200,7 +246,8 @@ ecommerce-event-pipeline/
 ├── tests/
 │   ├── conftest.py                 # 테스트 fixture
 │   ├── test_generate_events.py     # 생성기 테스트 (20+ 케이스)
-│   └── test_validate_quality.py    # 검증기 테스트 (20+ 케이스)
+│   ├── test_validate_quality.py    # 검증기 테스트 (20+ 케이스)
+│   └── test_llm_daily_report.py    # LLM 리포트 테스트 (18 케이스)
 ├── docker/
 │   └── init-db.sh                  # PostgreSQL 초기화 (ecommerce DB 생성)
 ├── docker-compose.yml              # Airflow + PostgreSQL 환경
@@ -217,6 +264,7 @@ ecommerce-event-pipeline/
 | 데이터베이스 | PostgreSQL 15 (JSONB, CTE, Window Functions) |
 | 배치 처리 | PySpark 3.5 (DataFrame API, from_json, explode, Window) |
 | 알림/모니터링 | Slack Incoming Webhook + 자체 품질 대시보드 |
+| AI 리포팅 | OpenAI GPT-4o / Anthropic Claude 3.5 (프롬프트 엔지니어링 기반 자동 분석) |
 | 언어 | Python 3.11, SQL |
 | 테스트 | pytest, pytest-cov |
 | 인프라 | Docker Compose (멀티 서비스, 헬스체크, 볼륨) |

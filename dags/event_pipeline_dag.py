@@ -1,7 +1,7 @@
 """
 이커머스 행동 로그 파이프라인 DAG
 ====================================
-일별 실행: 이벤트 생성 → 품질 검증 → 분기 → DB 적재 → 마트 생성(병렬) → 리포트
+일별 실행: 이벤트 생성 → 품질 검증 → 분기 → DB 적재 → 마트 생성(병렬) → 리포트 → LLM 매출 리포트
 
 Task 흐름:
   generate_events
@@ -9,10 +9,14 @@ Task 흐름:
           → quality_branch
               ├─ [PASS] load_to_database
               │     → [create_user_mart  ┐
-              │        create_funnel_mart ├→ save_quality_log → quality_report
+              │        create_funnel_mart ├→ save_quality_log → quality_report → llm_daily_report
               │        create_product_mart│
               │        create_order_mart  ┘]
               └─ [FAIL] quality_alert ──────→ save_quality_log → quality_report
+
+LLM 리포트:
+  마트 4종 집계 데이터 → 프롬프트 엔지니어링 → LLM(OpenAI/Claude) 분석 → Slack 발송
+  quality_report 이후 PASS 경로에서만 실행 (마트 데이터 필요)
 
 스케줄: 매일 02:00 KST (전일 데이터 처리)
 """
@@ -351,6 +355,59 @@ def generate_quality_report_task(**context):
     )
 
 
+def llm_daily_report_task(**context):
+    """LLM 기반 일간 매출 자동 요약 리포트 생성 및 Slack 발송
+
+    마트 4종 집계 데이터를 LLM API(OpenAI/Claude)로 분석하여
+    자연어 비즈니스 리포트를 자동 생성하고 Slack으로 발송합니다.
+    """
+    from scripts.llm_daily_report import LLMDailyReporter, MartDataExtractor
+
+    execution_date = context["ds"]
+
+    # 마트 데이터 추출 (DB 우선, 실패 시 로컬 리포트 폴백)
+    try:
+        hook = PostgresHook(postgres_conn_id="ecommerce_db")
+        mart_data = MartDataExtractor.extract_from_db(hook, execution_date)
+        logger.info("[LLM Report] DB에서 마트 데이터 추출 완료")
+    except Exception as e:
+        logger.warning("[LLM Report] DB 추출 실패, 로컬 리포트 폴백: %s", str(e))
+        report_path = os.path.join(
+            PROJECT_DIR, "data", "reports", f"pipeline_report_{execution_date}.json"
+        )
+        if os.path.exists(report_path):
+            mart_data = MartDataExtractor.extract_from_report(report_path)
+        else:
+            logger.error("[LLM Report] 폴백 리포트 파일도 없음: %s", report_path)
+            raise
+
+    # LLM 리포트 생성
+    reporter = LLMDailyReporter()
+    report_text = reporter.generate_report(mart_data, execution_date)
+
+    # 리포트 파일 저장
+    report_dir = os.path.join(PROJECT_DIR, "data", "reports")
+    saved_path = reporter.save_report(report_text, execution_date, report_dir)
+
+    # Slack 발송
+    reporter.send_to_slack(report_text, execution_date)
+
+    # XCom 으로 리포트 경로 전달
+    context["ti"].xcom_push(key="llm_report_path", value=saved_path)
+
+    print(f"\n{'='*60}")
+    print(f"LLM 일간 매출 리포트: {execution_date}")
+    print(f"{'='*60}")
+    print(f"  Provider: {reporter.provider}")
+    print(f"  Model: {reporter.llm.model}")
+    print(f"  저장: {saved_path}")
+    print(f"{'='*60}")
+    print(report_text[:500])
+    if len(report_text) > 500:
+        print(f"... ({len(report_text)}자)")
+    print(f"{'='*60}")
+
+
 # ========== Task 정의 ==========
 
 generate_events = PythonOperator(
@@ -448,13 +505,22 @@ quality_report = PythonOperator(
     dag=dag,
 )
 
+llm_daily_report = PythonOperator(
+    task_id="llm_daily_report",
+    python_callable=llm_daily_report_task,
+    execution_timeout=timedelta(minutes=10),
+    retries=2,
+    retry_delay=timedelta(minutes=1),
+    dag=dag,
+)
+
 
 # ========== Task 의존성 (DAG 그래프) ==========
 #
 #  generate_events → validate_quality → quality_branch
 #                                          ├── [PASS] load_to_database
 #                                          │     → [user_mart, funnel_mart, product_mart, order_mart]
-#                                          │         → save_quality_log → quality_report
+#                                          │         → save_quality_log → quality_report → llm_daily_report
 #                                          └── [FAIL] quality_alert
 #                                                → save_quality_log → quality_report
 
@@ -470,3 +536,6 @@ quality_branch >> quality_alert >> save_quality_log
 
 # 공통 종료: 품질 로그 → 리포트
 save_quality_log >> quality_report
+
+# LLM 리포트: 마트 생성 완료 후 (PASS 경로에서만 실행)
+quality_report >> llm_daily_report

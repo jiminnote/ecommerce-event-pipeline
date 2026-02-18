@@ -800,8 +800,8 @@
 <section class="hero">
     <div class="hero-content fade-up">
         <div class="hero-badge">🎯 Data Engineering Portfolio</div>
-        <h1>Airflow 기반 이커머스<br>ETL 파이프라인 & 데이터 마트 구축</h1>
-        <p class="hero-subtitle">이벤트 로그 수집부터 품질 검증, DB 적재, 분석용 마트 4종 구축까지<br>실무 수준의 데이터 파이프라인 전체를 설계·개발한 프로젝트입니다.</p>
+        <h1>Airflow 기반 이커머스<br>ETL 파이프라인 & AI 리포팅 구축</h1>
+        <p class="hero-subtitle">이벤트 로그 수집부터 품질 검증, DB 적재, 분석용 마트 4종 구축,<br>LLM 기반 AI 매출 자동 분석 리포트까지 End-to-End 데이터 파이프라인을 설계·개발한 프로젝트입니다.</p>
 
         <div class="hero-flow">
             <span class="flow-step">🎲 이벤트 생성</span>
@@ -811,6 +811,8 @@
             <span class="flow-step">🐘 PostgreSQL 적재</span>
             <span class="flow-arrow">→</span>
             <span class="flow-step">📊 DM 4종 구축</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step">🤖 AI 매출 리포트</span>
         </div>
 
         <div class="hero-meta">
@@ -847,7 +849,8 @@
             <h3>어떤 문제를 해결하는가</h3>
             <p><strong>① 데이터 무결성:</strong> 7가지 자동 품질 검증으로 불량 데이터 적재 원천 차단<br>
             <strong>② 운영 효율:</strong> Airflow DAG 기반 일 배치 자동화<br>
-            <strong>③ 분석 기반:</strong> 사용자/퍼널/상품/주문 4종 마트로 비즈니스 인사이트 즉시 도출</p>
+            <strong>③ 분석 기반:</strong> 사용자/퍼널/상품/주문 4종 마트로 비즈니스 인사이트 즉시 도출<br>
+            <strong>④ AI 리포팅:</strong> LLM 기반 일간 매출 자동 분석으로 의사결정 지원</p>
         </div>
         <div class="bg-card">
             <div class="bg-card-icon" style="background:#ecfdf5;">🏗️</div>
@@ -932,6 +935,19 @@
                     <div class="arch-box-sub">Slack 알림 + 리포트</div>
                 </div>
             </div>
+            <div class="arch-connector">→</div>
+            <!-- LLM Report -->
+            <div class="arch-node">
+                <div class="arch-box" style="border-color:rgba(139,92,246,0.4); background:rgba(139,92,246,0.08);">
+                    <div class="arch-box-icon">🤖</div>
+                    <div class="arch-box-label">llm_daily_report</div>
+                    <div class="arch-box-sub">AI 매출 분석 → Slack</div>
+                </div>
+                <div style="margin-top:8px; display:flex; flex-direction:column; gap:4px; align-items:center;">
+                    <span style="font-size:10px; color:#a78bfa; font-weight:600;">OpenAI / Claude</span>
+                    <span style="font-size:10px; color:#94a3b8;">프롬프트 엔지니어링</span>
+                </div>
+            </div>
         </div>
 
         <div class="arch-legend">
@@ -951,6 +967,10 @@
                 <div class="arch-legend-dot" style="background:rgba(16,185,129,0.4);"></div>
                 DB 적재
             </div>
+            <div class="arch-legend-item">
+                <div class="arch-legend-dot" style="background:rgba(139,92,246,0.5);"></div>
+                LLM AI 리포트
+            </div>
         </div>
     </div>
 </section>
@@ -961,7 +981,7 @@
 <section class="section" id="match">
     <span class="section-label">03 — Core Implementation</span>
         <h2 class="section-title">핵심 구현 내용</h2>
-            <p class="section-desc">이 프로젝트에서 설계·구현한 핵심 기능을 3가지 영역으로 정리했습니다.</p>
+            <p class="section-desc">이 프로젝트에서 설계·구현한 핵심 기능을 4가지 영역으로 정리했습니다.</p>
 
     <div class="match-grid fade-up">
         <!-- 4-1. Airflow ETL -->
@@ -977,8 +997,8 @@
                 <div class="match-detail-grid">
                     <div class="match-detail-item">
                         <h4>📐 DAG 구조</h4>
-                        <p>10개 Task로 구성된 단일 DAG.<br>
-                        <code>PythonOperator</code> 6개 + <code>PostgresOperator</code> 4개로 역할 분리.</p>
+                        <p>11개 Task로 구성된 단일 DAG.<br>
+                        <code>PythonOperator</code> 7개 + <code>PostgresOperator</code> 4개로 역할 분리.</p>
                     </div>
                     <div class="match-detail-item">
                         <h4>🔗 Task 의존성</h4>
@@ -1097,12 +1117,50 @@
                 </div>
             </div>
         </div>
+
+        <!-- 4-4. LLM AI Report -->
+        <div class="match-card">
+            <div class="match-card-header">
+                <div class="match-card-num" style="background:#f3e8ff; color:#7c3aed;">4</div>
+                <div>
+                    <h3>LLM 기반 AI 매출 자동 리포팅</h3>
+                    <div class="subtitle">마트 4종 데이터 → 프롬프트 엔지니어링 → 자연어 비즈니스 리포트 → Slack 발송</div>
+                </div>
+            </div>
+            <div class="match-card-body">
+                <div class="match-detail-grid">
+                    <div class="match-detail-item">
+                        <h4>🤖 Multi-LLM 지원</h4>
+                        <p>OpenAI GPT-4o / Claude 3.5 Sonnet 중 선택 가능. <code>LLM_PROVIDER</code> 환경변수로 전환. API 키 미설정 시 폴백 리포트 자동 생성.</p>
+                    </div>
+                    <div class="match-detail-item">
+                        <h4>📝 프롬프트 엔지니어링</h4>
+                        <p>마트 4종 데이터를 구조화된 프롬프트로 변환. 시스템 프롬프트에 비즈니스 분석 규칙(매출, 전환율, 액션 아이템 등)을 정의.</p>
+                    </div>
+                    <div class="match-detail-item">
+                        <h4>📊 자동 분석 항목</h4>
+                        <p>핵심 KPI 요약, 플랫폼별 전환율 비교, 매출 TOP 상품 하이라이트, 결제수단 분포, 데이터 기반 액션 아이템 1~3가지 제안.</p>
+                    </div>
+                    <div class="match-detail-item">
+                        <h4>🔗 파이프라인 통합</h4>
+                        <p>Airflow DAG의 <code>quality_report</code> 이후 <code>llm_daily_report</code> Task로 실행. 마트 생성 완료 후 자동 트리거.</p>
+                    </div>
+                    <div class="match-detail-item">
+                        <h4>📨 Slack 발송</h4>
+                        <p>Block Kit 기반 리치 포맷으로 일간 AI 리포트 자동 발송. 리포트 하단에 모델 정보, 생성 시각 포함.</p>
+                    </div>
+                    <div class="match-detail-item">
+                        <h4>💾 이중 저장</h4>
+                        <p>생성된 리포트를 JSON 파일로 로컬 저장 + Slack 발송. DB 추출 실패 시 로컬 리포트 파일로 폴백 추출.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 
 <hr class="divider">
 
-<!-- QUALITY -->
 <section class="section" id="quality">
     <div class="fade-up">
         <span class="section-label">04 — Data Quality</span>
@@ -1253,6 +1311,13 @@
                 <div class="tech-role">이벤트 스키마 표준화</div>
             </div>
         </div>
+        <div class="tech-item">
+            <div class="tech-icon" style="background:#f3e8ff;">🤖</div>
+            <div>
+                <div class="tech-name">OpenAI / Claude API</div>
+                <div class="tech-role">AI 매출 리포트 자동 생성</div>
+            </div>
+        </div>
     </div>
 </section>
 
@@ -1352,15 +1417,15 @@
 
     <div class="test-summary fade-up">
         <div class="test-stat">
-            <div class="test-stat-num">30+</div>
+            <div class="test-stat-num">50+</div>
             <div class="test-stat-label">테스트 케이스</div>
         </div>
         <div class="test-stat">
-            <div class="test-stat-num">3</div>
+            <div class="test-stat-num">4</div>
             <div class="test-stat-label">테스트 모듈</div>
         </div>
         <div class="test-stat">
-            <div class="test-stat-num">7</div>
+            <div class="test-stat-num">9</div>
             <div class="test-stat-label">테스트 카테고리</div>
         </div>
         <div class="test-stat">
@@ -1398,6 +1463,10 @@
             <span class="test-cat-name">🌐 엣지 케이스 (소규모/대규모/날짜/주말 트래픽)</span>
             <span class="test-cat-count">4개</span>
         </div>
+        <div class="test-cat-item">
+            <span class="test-cat-name">🤖 LLM 리포트 (클라이언트/데이터 추출/프롬프트/통합)</span>
+            <span class="test-cat-count">18개</span>
+        </div>
     </div>
 </section>
 
@@ -1421,6 +1490,7 @@
                 <li>멱등성 보장 DELETE+INSERT 패턴으로 운영 안정성 확보</li>
                 <li>pytest 30+ 케이스로 핵심 로직 검증 자동화</li>
                 <li>Slack Webhook(Mock 기반 구현) 기반 실시간 파이프라인 모니터링</li>
+                <li>LLM API(OpenAI/Claude) 기반 일간 매출 자동 분석 리포트 생성</li>
                 <li>Docker Compose로 전체 인프라 코드화(IaC)</li>
             </ul>
         </div>
